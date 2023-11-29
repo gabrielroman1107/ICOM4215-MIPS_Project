@@ -110,7 +110,7 @@ reg S;
     );
 
 initial begin
-    $readmemb("instructions.txt", imem.mem);
+    $readmemb("precargas/instructions.txt", imem.mem);
 end
 
 always begin
