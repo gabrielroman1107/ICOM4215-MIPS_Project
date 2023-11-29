@@ -1,21 +1,22 @@
 
 module PPU_Control_Unit (
     input wire [31:0] instruction,
-    output reg [17:0] control_signals
+    output reg [17:0] control_signals,
+    
+    output wire [2:0] ID_SourceOperand_3bits,
+    output wire [3:0] ID_ALU_OP,
+    output wire ID_Load_Instr,
+    output wire ID_RF_Enable,
+    output wire ID_B_Instr,
+    output wire ID_TA_Instr,
+    output wire [1:0] ID_MEM_Size,
+    output wire ID_MEM_RW,
+    output wire ID_MEM_SE,
+    output wire ID_Enable_HI,
+    output wire ID_Enable_LO,
+    output wire ID_MEM_Enable
 );
 
-    wire [2:0] ID_SourceOperand_3bits;
-    wire [3:0] ID_ALU_OP;
-    wire ID_Load_Instr;
-    wire ID_RF_Enable;
-    wire ID_B_Instr;
-    wire ID_TA_Instr;
-    wire [1:0] ID_MEM_Size;
-    wire ID_MEM_RW;
-    wire ID_MEM_SE;
-    wire ID_Enable_HI;
-    wire ID_Enable_LO;
-	wire ID_MEM_Enable;
 
 // Opcode values
     parameter R_TYPE1 = 6'b000000;
