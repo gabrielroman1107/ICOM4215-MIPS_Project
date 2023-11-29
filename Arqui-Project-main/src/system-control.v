@@ -5,6 +5,9 @@
 `include "WB_Stage.v"
 `include "instructionMemory.v"
 `include "hazarding-unit.v"
+`include "registerFile.v"
+`include "dataMemory.v"
+
 
 module system_control (
 
@@ -128,7 +131,7 @@ reg S;
         .I(instruction_wire_out)
     );
 
-    // Instantiate Hazard Forwarding Unit
+    // Instantiate Hazard Forwarding Unit /TODO: Check if this is correct
     hazard_forwarding_unit hazard_forwarding_unit(
         .forwardMX1(),
         .forwardMX2(),
@@ -149,6 +152,77 @@ reg S;
         .EX_load_instr(),
         .ID_store_instr()
     );
+
+    // Instantiate Register File /TODO: Check if this is correct
+    RegisterFile register_file(
+        .clk(clk),
+        .LE(control_unit.ID_Load_Instr),
+        .PW(datamem.DO),
+        .RW(if_stage.instruction_reg[15:11]),
+        .RA(if_stage.instruction_reg[25:21]),
+        .RB(if_stage.instruction_reg[20:16]),
+        .PA(),
+        .PB()
+    );
+
+    // Instantiate Data Memory /TODO: Check if this is correct
+    DataMemory datamem(
+        .A(pc.pc_out),
+        .DI(register_file.PB),
+        .Size(mem_stage.control_signals_out[6:5]), // Data size: 00 (byte), 01 (halfword), 10 (word)
+        .R_W(mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
+        .E(mem_stage.control_signals_out[2]), // Enable signal
+        .SE(mem_stage.control_signals_out[3]), // Sign extension signal for halfword and byte operations
+        .DO() // Data output 
+    );
+
+    // Instantiate ALU
+    ALU ex_alu(
+        .A(muxA.mux_out),
+        .B(register_file.PB),
+        .Opcode(ex_stage.alu_op_reg),
+        .Out()
+    );
+
+    // Instantiate MUX
+    Mux muxA(
+        .input_0(register_file.PA),
+        .input_1(datamem.DO),
+        .input_2(ex_alu.ALU_OUT),
+        .input_3(pc.pc_out),
+        .input_4(npc.npc_out),
+        .input_5(),
+        .input_6(),
+        .input_7(),
+        .S(ex_stage.SourceOperand_3bits),
+        .mux_out()
+    );
+
+    // Instantiate MUX
+    Mux muxB(
+        .input_0(register_file.PA),
+        .input_1(datamem.DO),
+        .input_2(ex_alu.ALU_OUT),
+        .input_3(pc.pc_out),
+        .input_4(npc.npc_out),
+        .input_5(),
+        .input_6(),
+        .input_7(),
+        .S(ex_stage.SourceOperand_3bits),
+        .mux_out()
+    );
+
+    // Instantiate Source Operand Handler
+    SourceOperandHandler source_operand_handler(
+        .PB(),
+        .HI(),
+        .LO(),
+        .PC(pc.pc_out),
+        .imm16(if_stage.instruction_reg[15:0]),
+        .S(control_unit.ID_SourceOperand_3bits),
+        .N()
+    );
+
 
 initial begin
     $readmemb("precargas/phase4.txt", imem.mem);
@@ -191,6 +265,9 @@ always @(posedge clk) begin
     $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out);
     $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out);
     $display("**************************************************************************");
+
+    // // Print DataOut
+    // $display("\nDataOut=%b", DataOut);
 
     // Print control signals of EX, MEM, and WB stages
     // $display("\nEX: %b MEM: %b WB: %b", dut.alu_op_reg, dut.mem_enable_reg, dut.rf_enable_reg);
