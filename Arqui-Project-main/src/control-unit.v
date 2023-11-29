@@ -114,7 +114,7 @@ parameter J_OP       = 6'b000010,
     assign  ID_SourceOperand_3bits  = (instruction[31:26] == ADDIU_OP) ? 3'b001 : 3'b000; // source operand 2 handler sign control 3 bits definit cuan senal sale pa cada instruccion
     assign ID_ALU_OP     = (instruction[31:26] == ADDIU_OP) ? 3'b001
                        : ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) ? 4'b010 : 4'b000; //bit11-14
-    assign ID_Load_Instr = (instruction[31:26] == LBU_OP) ? 1'b1 : 1'b0; //bit10 
+    assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit10 
     assign ID_RF_Enable = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit9 
     assign ID_B_Instr    = (instruction[31:26] == BGTZ_OP) ? 1'b1 : 1'b0; //bit8
     assign ID_TA_Instr   = (instruction[31:26] == JAL_OP) ? 1'b1 : 1'b0; //bit7
@@ -138,7 +138,7 @@ always @ (instruction) begin
         OR_FUNCT: $display("Keyword: OR");
         XOR_FUNCT: $display("Keyword: XOR");
         NOR_FUNCT: $display("Keyword: NOR");
-        SLL_FUNCT: $display("Keyword: SLL");
+        SLL_FUNCT: if (instruction[25:0] == 26'b0) $display("Keyword: NOP"); else $display("Keyword: SLL");
         SLLV_FUNCT: $display("Keyword: SLLV");
         SRA_FUNCT: $display("Keyword: SRA");
         SRAV_FUNCT: $display("Keyword: SRAV");
@@ -209,9 +209,13 @@ always @ (instruction) begin
         JAL_OP: $display("Keyword: JAL");
         LUI_OP: $display("Keyword: LUI");
 
-    B_Case: if(instruction[25:21] == instruction[20:16]) begin
-                 $display("Keyword: BEQ");
-    end else begin $display("Keyword: B"); end
+    B_Case: begin
+        if(instruction[25:21] == instruction[20:16]) begin
+            $display("Keyword: BEQ");
+        end else begin
+            $display("Keyword: B");
+        end
+    end
 
     default: $display("Keyword: Unknown");
 endcase
