@@ -1,5 +1,9 @@
-`include "control-unit.v"
+// `include "control-unit.v"
 `include "instructionMemory.v"
+`include "Adder+4.v"
+`include "PC-Register.v"
+`include "NPC-Register.v"
+`include "IF_Stage.v"
 
 module SimplePipeline(
     input wire clk,
@@ -27,14 +31,13 @@ module SimplePipeline(
 	reg lo_enable_reg;
 	reg [8:0] A; 
 	wire [31:0] I;
-	integer fi, fo, code, i; 
-	reg [7:0] data;
+    reg [7:0] data;
 	
 	// Instantiate Control Unit
-	PPU_Control_Unit control_unit(
-    .instruction(instruction_reg),
-    .control_output(control_output)
-  );
+// 	PPU_Control_Unit control_unit(
+//     .instruction(instruction_reg),
+//     .control_output(control_output)
+//   );
  
 
     // Load enable for PC and nPC
@@ -60,7 +63,6 @@ module SimplePipeline(
         $readmemb("instructions.txt", imem.mem);
     end
 
-
       // Etapa IF (Fetch)
     always @(posedge clk or posedge reset) begin
         if (reset) begin
@@ -75,7 +77,7 @@ module SimplePipeline(
             instruction_reg <= I;
             #1;
 			$display("----------------------------------------------------------------------------------------",
-            "\nInstruction = %b, PC = %d, nPC = %d, Control Unit = %b",instruction_reg, pc_reg, npc_reg, control_output);
+            "\nInstruction = %b, PC = %d, nPC = %d, Control Unit = %b", instruction_reg, pc.pc_out , npc.npc_out, control_output);
         end
     end
 

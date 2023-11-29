@@ -1,0 +1,58 @@
+#! /mingw32/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1391-gd480c4d7d)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\msys64\mingw32\lib\ivl\system.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\va_math.vpi";
+S_01576a80 .scope module, "WB_Stage" "WB_Stage" 2 1;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "reset";
+    .port_info 2 /INPUT 17 "control_signals";
+    .port_info 3 /OUTPUT 17 "control_signals_out";
+o01471fd4 .functor BUFZ 1, C4<z>; HiZ drive
+v01576b58_0 .net "clk", 0 0, o01471fd4;  0 drivers
+o01471fec .functor BUFZ 17, C4<zzzzzzzzzzzzzzzzz>; HiZ drive
+v01576bb0_0 .net "control_signals", 16 0, o01471fec;  0 drivers
+o01472004 .functor BUFZ 17, C4<zzzzzzzzzzzzzzzzz>; HiZ drive
+v01576c08_0 .net "control_signals_out", 16 0, o01472004;  0 drivers
+v0157d998_0 .var "hi_enable_reg", 0 0;
+v0157d9f0_0 .var "lo_enable_reg", 0 0;
+o0147204c .functor BUFZ 1, C4<z>; HiZ drive
+v0157da48_0 .net "reset", 0 0, o0147204c;  0 drivers
+v0157daa0_0 .var "rf_enable_reg", 0 0;
+E_0157ae80 .event posedge, v01576b58_0;
+    .scope S_01576a80;
+T_0 ;
+    %wait E_0157ae80;
+    %load/vec4 v0157da48_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0157daa0_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0157d998_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0157d9f0_0, 0, 1;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v01576bb0_0;
+    %parti/s 1, 9, 5;
+    %store/vec4 v0157daa0_0, 0, 1;
+    %load/vec4 v01576bb0_0;
+    %parti/s 1, 2, 3;
+    %store/vec4 v0157d998_0, 0, 1;
+    %load/vec4 v01576bb0_0;
+    %parti/s 1, 1, 2;
+    %store/vec4 v0157d9f0_0, 0, 1;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "WB_Stage.v";

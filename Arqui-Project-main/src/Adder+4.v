@@ -1,6 +1,6 @@
 module Adder_4 (
-    input [31:0] adder_in,
-    output reg [31:0] adder_out
+    input [8:0] adder_in,
+    output reg [8:0] adder_out
 );
 
     always @* begin
