@@ -4,6 +4,7 @@
 `include "MEM_Stage.v"
 `include "WB_Stage.v"
 `include "instructionMemory.v"
+`include "hazarding-unit.v"
 
 module system_control (
 
@@ -107,6 +108,28 @@ reg S;
     InstructionMemory imem(
         .A(pc.pc_out),
         .I(instruction_wire_out)
+    );
+
+    // Instantiate Hazard Forwarding Unit
+    hazard_forwarding_unit hazard_forwarding_unit(
+        .forwardMX1(),
+        .forwardMX2(),
+        .forwardMX3(),
+        .nPC_LE(),
+        .PC_LE(),
+        .IF_ID_LE(),
+        .CU_S(),
+        .EX_Register_File_Enable(),
+        .MEM_Register_File_Enable(),
+        .WB_Register_File_Enable(),
+        .EX_RD(),
+        .MEM_RD(),
+        .WB_RD(),
+        .ID_rs1(),
+        .ID_rs2(),
+        .ID_rd(),
+        .EX_load_instr(),
+        .ID_store_instr()
     );
 
 initial begin
