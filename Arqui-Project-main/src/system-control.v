@@ -71,7 +71,13 @@ reg S;
         .clk(clk),
         .reset(reset),
         .control_signals(mux.mux_control_signals),
-        .control_signals_out()
+        .control_signals_out(),
+        .alu_op_reg(),
+        .branch_reg(),
+        .load_instr_reg(),
+        .rf_enable_reg(),
+        .SourceOperand_3bits(),
+        .ta_instr_reg()
     );
 
     //Instantiate MEM_Stage
@@ -145,7 +151,7 @@ reg S;
     );
 
 initial begin
-    $readmemb("precargas/instructions.txt", imem.mem);
+    $readmemb("precargas/phase4.txt", imem.mem);
 end
 
 always begin
@@ -158,7 +164,7 @@ end
     #3 reset = 1'b0; // Remove the reset
     S = 1'b0; 
     #40 S = 1'b1; // Set the S signal
-    #48 $finish;
+    #56 $finish;
 join
 
 always @(posedge clk) begin

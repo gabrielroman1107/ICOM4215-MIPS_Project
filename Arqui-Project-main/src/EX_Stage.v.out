@@ -1,0 +1,128 @@
+#! /mingw32/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1391-gd480c4d7d)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\msys64\mingw32\lib\ivl\system.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\va_math.vpi";
+S_01306a40 .scope module, "EX_Stage" "EX_Stage" 2 1;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "reset";
+    .port_info 2 /INPUT 18 "control_signals";
+    .port_info 3 /OUTPUT 18 "control_signals_out";
+    .port_info 4 /OUTPUT 3 "alu_op_reg";
+    .port_info 5 /OUTPUT 1 "branch_reg";
+    .port_info 6 /OUTPUT 1 "load_instr_reg";
+    .port_info 7 /OUTPUT 1 "rf_enable_reg";
+    .port_info 8 /OUTPUT 1 "SourceOperand_3bits";
+    .port_info 9 /OUTPUT 1 "ta_instr_reg";
+v01306b98_0 .var "SourceOperand_3bits", 0 0;
+v0130dbd0_0 .var "alu_op_reg", 2 0;
+v0130dc28_0 .var "branch_reg", 0 0;
+o011c501c .functor BUFZ 1, C4<z>; HiZ drive
+v0130dc80_0 .net "clk", 0 0, o011c501c;  0 drivers
+o011c5034 .functor BUFZ 18, C4<zzzzzzzzzzzzzzzzzz>; HiZ drive
+v011c0c10_0 .net "control_signals", 17 0, o011c5034;  0 drivers
+v011c0c68_0 .var "control_signals_out", 17 0;
+v011c0cc0_0 .var "load_instr_reg", 0 0;
+o011c507c .functor BUFZ 1, C4<z>; HiZ drive
+v011c0d18_0 .net "reset", 0 0, o011c507c;  0 drivers
+v011c0d70_0 .var "rf_enable_reg", 0 0;
+v011c0dc8_0 .var "ta_instr_reg", 0 0;
+E_0130bcd0 .event posedge, v0130dc80_0;
+    .scope S_01306a40;
+T_0 ;
+    %wait E_0130bcd0;
+    %load/vec4 v011c0d18_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 0, 0, 3;
+    %store/vec4 v0130dbd0_0, 0, 3;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v0130dc28_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v011c0cc0_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v011c0d70_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v01306b98_0, 0, 1;
+    %pushi/vec4 0, 0, 1;
+    %store/vec4 v011c0dc8_0, 0, 1;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v011c0c10_0;
+    %parti/s 3, 15, 5;
+    %pad/u 1;
+    %store/vec4 v01306b98_0, 0, 1;
+    %load/vec4 v011c0c10_0;
+    %parti/s 4, 11, 5;
+    %pad/u 3;
+    %store/vec4 v0130dbd0_0, 0, 3;
+    %load/vec4 v011c0c10_0;
+    %parti/s 1, 10, 5;
+    %store/vec4 v0130dc28_0, 0, 1;
+    %load/vec4 v011c0c10_0;
+    %parti/s 1, 9, 5;
+    %store/vec4 v011c0cc0_0, 0, 1;
+    %load/vec4 v011c0c10_0;
+    %parti/s 1, 8, 5;
+    %store/vec4 v011c0d70_0, 0, 1;
+    %load/vec4 v011c0c10_0;
+    %parti/s 1, 7, 4;
+    %store/vec4 v011c0dc8_0, 0, 1;
+    %load/vec4 v01306b98_0;
+    %pad/u 3;
+    %ix/load 4, 15, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v0130dbd0_0;
+    %pad/u 4;
+    %ix/load 4, 11, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v0130dc28_0;
+    %ix/load 4, 10, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v011c0cc0_0;
+    %ix/load 4, 9, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v011c0d70_0;
+    %ix/load 4, 8, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v011c0dc8_0;
+    %ix/load 4, 7, 0;
+    %ix/load 5, 0, 0;
+    %flag_set/imm 4, 0;
+    %assign/vec4/off/d v011c0c68_0, 4, 5;
+    %load/vec4 v01306b98_0;
+    %load/vec4 v0130dbd0_0;
+    %concat/vec4; draw_concat_vec4
+    %load/vec4 v0130dc28_0;
+    %concat/vec4; draw_concat_vec4
+    %load/vec4 v011c0cc0_0;
+    %concat/vec4; draw_concat_vec4
+    %load/vec4 v011c0d70_0;
+    %concat/vec4; draw_concat_vec4
+    %load/vec4 v011c0dc8_0;
+    %concat/vec4; draw_concat_vec4
+    %pad/u 18;
+    %store/vec4 v011c0c68_0, 0, 18;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "EX_Stage.v";

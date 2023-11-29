@@ -65,6 +65,10 @@ module PPU_Control_Unit (
     parameter MFC0_FUNCT = 5'b00000;
     parameter MTC0_FUNCT = 5'b00100;
 
+// B Case
+    parameter B_Case = 6'b000100;
+
+
 
 //rt values I types
 parameter BGEZ_RT    = 5'b00001,
@@ -83,7 +87,6 @@ parameter BGEZ_RT    = 5'b00001,
 parameter ADDI_OP    = 6'b001000,
           ADDIU_OP   = 6'b001001,
           ANDI_OP    = 6'b001100,
-          BEQ_OP     = 6'b000100,
           BGTZ_OP    = 6'b000111,
           BLEZ_OP    = 6'b000110,
           BNE_OP     = 6'b000101,
@@ -100,7 +103,6 @@ parameter ADDI_OP    = 6'b001000,
           SB_OP      = 6'b101000,
           SH_OP      = 6'b101001,
           SW_OP      = 6'b101011,
-          B_OP       = 6'b000100,
           LUI_OP     = 6'b001111;
     
 // J types
@@ -185,7 +187,7 @@ always @ (instruction) begin
         ADDI_OP: $display("Keyword: ADDI");   
         ADDIU_OP: $display("Keyword: ADDIU");   
         ANDI_OP: $display("Keyword: ANDI"); 
-        BEQ_OP: $display("Keyword: BEQ");    
+        // BEQ_OP: $display("Keyword: BEQ");    
         BGTZ_OP: $display("Keyword: BGTZ");    
         BLEZ_OP: $display("Keyword: BLEZ");   
         BNE_OP: $display("Keyword: BNE");     
@@ -202,10 +204,14 @@ always @ (instruction) begin
         SB_OP: $display("Keyword: SB");
         SH_OP: $display("Keyword: SH");
         SW_OP: $display("Keyword: SW");
-        B_OP: $display("Keyword: B");
+        // B_OP: $display("Keyword: B");
         J_OP: $display("Keyword: J");
         JAL_OP: $display("Keyword: JAL");
         LUI_OP: $display("Keyword: LUI");
+
+    B_Case: if(instruction[25:21] == instruction[20:16]) begin
+                 $display("Keyword: BEQ");
+    end else begin $display("Keyword: B"); end
 
     default: $display("Keyword: Unknown");
 endcase
