@@ -2,7 +2,6 @@
 :ivl_version "11.0 (stable)" "(v11_0)";
 :ivl_delay_selection "TYPICAL";
 :vpi_time_precision - 9;
-<<<<<<< HEAD
 :vpi_module "C:\msys64\mingw32\lib\ivl\system.vpi";
 :vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_sys.vpi";
 :vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_textio.vpi";
@@ -24,27 +23,6 @@ v01305658_0 .net "adder_in", 8 0, v0136f2e8_0;  1 drivers
 v01305d90_0 .var "adder_out", 8 0;
 E_0130fd78 .event anyedge, v01305658_0;
 S_01269978 .scope module, "control_unit" "PPU_Control_Unit" 2 103, 4 2 0, S_0123d738;
-=======
-:vpi_module "/opt/local/lib/ivl/system.vpi";
-:vpi_module "/opt/local/lib/ivl/vhdl_sys.vpi";
-:vpi_module "/opt/local/lib/ivl/vhdl_textio.vpi";
-:vpi_module "/opt/local/lib/ivl/v2005_math.vpi";
-:vpi_module "/opt/local/lib/ivl/va_math.vpi";
-S_0x11c77a4d0 .scope module, "system_control" "system_control" 2 9;
- .timescale -9 -9;
-v0x11c7904f0_0 .var "S", 0 0;
-v0x11c790590_0 .var "clk", 0 0;
-v0x11c790620_0 .net "instruction_wire_out", 31 0, L_0x11c793d70;  1 drivers
-v0x11c790710_0 .var "reset", 0 0;
-S_0x11c747a60 .scope module, "adder" "Adder_4" 2 46, 3 1 0, S_0x11c77a4d0;
- .timescale 0 0;
-    .port_info 0 /INPUT 9 "adder_in";
-    .port_info 1 /OUTPUT 9 "adder_out";
-v0x11c73b090_0 .net "adder_in", 8 0, v0x11c78f4c0_0;  1 drivers
-v0x11c785c30_0 .var "adder_out", 8 0;
-E_0x11c77efd0 .event edge, v0x11c73b090_0;
-S_0x11c785cf0 .scope module, "control_unit" "PPU_Control_Unit" 2 100, 4 2 0, S_0x11c77a4d0;
->>>>>>> fe90098442b68b2f452279b47ae3446514e4418a
  .timescale 0 0;
     .port_info 0 /INPUT 32 "instruction";
     .port_info 1 /OUTPUT 18 "control_signals";
