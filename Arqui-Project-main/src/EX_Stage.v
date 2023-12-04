@@ -2,16 +2,14 @@ module EX_Stage (
     input clk,
     input reset,
     input [17:0] control_signals,
-    output reg [17:0] control_signals_out
+    output reg [17:0] control_signals_out,
+    output reg [2:0] alu_op_reg,
+    output reg branch_reg,
+    output reg load_instr_reg,
+    output reg rf_enable_reg,
+    output reg SourceOperand_3bits,
+    output reg ta_instr_reg
 );
-
-     reg [2:0] alu_op_reg;
-     reg branch_reg;
-     reg load_instr_reg;
-     reg rf_enable_reg;
-     reg SourceOperand_3bits;
-    reg ta_instr_reg;
-   
     // Execute stage logic
     always @(posedge clk ) begin
         if (reset) begin

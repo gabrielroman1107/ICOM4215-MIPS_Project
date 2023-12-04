@@ -1,21 +1,22 @@
 
 module PPU_Control_Unit (
     input wire [31:0] instruction,
-    output reg [17:0] control_signals
+    output reg [17:0] control_signals,
+    
+    output wire [2:0] ID_SourceOperand_3bits,
+    output wire [3:0] ID_ALU_OP,
+    output wire ID_Load_Instr,
+    output wire ID_RF_Enable,
+    output wire ID_B_Instr,
+    output wire ID_TA_Instr,
+    output wire [1:0] ID_MEM_Size,
+    output wire ID_MEM_RW,
+    output wire ID_MEM_SE,
+    output wire ID_Enable_HI,
+    output wire ID_Enable_LO,
+    output wire ID_MEM_Enable
 );
 
-    wire [2:0] ID_SourceOperand_3bits;
-    wire [3:0] ID_ALU_OP;
-    wire ID_Load_Instr;
-    wire ID_RF_Enable;
-    wire ID_B_Instr;
-    wire ID_TA_Instr;
-    wire [1:0] ID_MEM_Size;
-    wire ID_MEM_RW;
-    wire ID_MEM_SE;
-    wire ID_Enable_HI;
-    wire ID_Enable_LO;
-	wire ID_MEM_Enable;
 
 // Opcode values
     parameter R_TYPE1 = 6'b000000;
@@ -64,6 +65,10 @@ module PPU_Control_Unit (
     parameter MFC0_FUNCT = 5'b00000;
     parameter MTC0_FUNCT = 5'b00100;
 
+// B Case
+    parameter B_Case = 6'b000100;
+
+
 
 //rt values I types
 parameter BGEZ_RT    = 5'b00001,
@@ -82,7 +87,6 @@ parameter BGEZ_RT    = 5'b00001,
 parameter ADDI_OP    = 6'b001000,
           ADDIU_OP   = 6'b001001,
           ANDI_OP    = 6'b001100,
-          BEQ_OP     = 6'b000100,
           BGTZ_OP    = 6'b000111,
           BLEZ_OP    = 6'b000110,
           BNE_OP     = 6'b000101,
@@ -99,7 +103,6 @@ parameter ADDI_OP    = 6'b001000,
           SB_OP      = 6'b101000,
           SH_OP      = 6'b101001,
           SW_OP      = 6'b101011,
-          B_OP       = 6'b000100,
           LUI_OP     = 6'b001111;
     
 // J types
@@ -111,7 +114,7 @@ parameter J_OP       = 6'b000010,
     assign  ID_SourceOperand_3bits  = (instruction[31:26] == ADDIU_OP) ? 3'b001 : 3'b000; // source operand 2 handler sign control 3 bits definit cuan senal sale pa cada instruccion
     assign ID_ALU_OP     = (instruction[31:26] == ADDIU_OP) ? 3'b001
                        : ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) ? 4'b010 : 4'b000; //bit11-14
-    assign ID_Load_Instr = (instruction[31:26] == LBU_OP) ? 1'b1 : 1'b0; //bit10 
+    assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit10 
     assign ID_RF_Enable = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit9 
     assign ID_B_Instr    = (instruction[31:26] == BGTZ_OP) ? 1'b1 : 1'b0; //bit8
     assign ID_TA_Instr   = (instruction[31:26] == JAL_OP) ? 1'b1 : 1'b0; //bit7
@@ -135,7 +138,7 @@ always @ (instruction) begin
         OR_FUNCT: $display("Keyword: OR");
         XOR_FUNCT: $display("Keyword: XOR");
         NOR_FUNCT: $display("Keyword: NOR");
-        SLL_FUNCT: $display("Keyword: SLL");
+        SLL_FUNCT: if (instruction[25:0] == 26'b0) $display("Keyword: NOP"); else $display("Keyword: SLL");
         SLLV_FUNCT: $display("Keyword: SLLV");
         SRA_FUNCT: $display("Keyword: SRA");
         SRAV_FUNCT: $display("Keyword: SRAV");
@@ -184,7 +187,7 @@ always @ (instruction) begin
         ADDI_OP: $display("Keyword: ADDI");   
         ADDIU_OP: $display("Keyword: ADDIU");   
         ANDI_OP: $display("Keyword: ANDI"); 
-        BEQ_OP: $display("Keyword: BEQ");    
+        // BEQ_OP: $display("Keyword: BEQ");    
         BGTZ_OP: $display("Keyword: BGTZ");    
         BLEZ_OP: $display("Keyword: BLEZ");   
         BNE_OP: $display("Keyword: BNE");     
@@ -201,10 +204,18 @@ always @ (instruction) begin
         SB_OP: $display("Keyword: SB");
         SH_OP: $display("Keyword: SH");
         SW_OP: $display("Keyword: SW");
-        B_OP: $display("Keyword: B");
+        // B_OP: $display("Keyword: B");
         J_OP: $display("Keyword: J");
         JAL_OP: $display("Keyword: JAL");
         LUI_OP: $display("Keyword: LUI");
+
+    B_Case: begin
+        if(instruction[25:21] == instruction[20:16]) begin
+            $display("Keyword: BEQ");
+        end else begin
+            $display("Keyword: B");
+        end
+    end
 
     default: $display("Keyword: Unknown");
 endcase
