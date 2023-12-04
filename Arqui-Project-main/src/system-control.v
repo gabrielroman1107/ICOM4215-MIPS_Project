@@ -190,31 +190,40 @@ reg S;
     );
 
     // Instantiate MUX
-    mux_32x1 muxA(
+    mux_4x1 muxA(
         .I0(register_file.PA),
-        .I1(datamem.DO),
+        .I1(datamem.DO), //CHANGE THIS
         .I2(ex_alu.Out),
-        .I3(pc.pc_out),
-        .I4(npc.npc_out),
-        .I5(),
-        .I6(),
-        .I7(),
-        .S(ex_stage.SourceOperand_3bits),
+        .I3(ex_alu.Out),
+        .S(hazard_forwarding_unit.forwardMX1),
         .Y()
     );
 
     // Instantiate MUX
-    mux_32x1 muxB(
+    mux_4x1 muxB(
         .I0(register_file.PA),
-        .I1(datamem.DO),
+        .I1(datamem.DO), //CHANGE THIS
         .I2(ex_alu.Out),
-        .I3(pc.pc_out),
-        .I4(npc.npc_out),
-        .I5(),
-        .I6(),
-        .I7(),
-        .S(ex_stage.SourceOperand_3bits),
+        .I3(ex_alu.Out),
+        .S(hazard_forwarding_unit.forwardMX2),
         .Y()
+    );
+
+    // Instantiate MUX 2x1 WB
+    mux_2x1 muxWB(
+        .I0(ex_alu.Out),
+        .I1(datamem.DO), //CHANGE THIS
+        .S(mem_stage.control_signals_out[1]),
+        .Y()
+    );
+
+
+
+// Instantiate PC+8 ALU
+    ALU pc8_alu(
+        .B(pc.pc_out),
+        .Opcode(control_unit.ID_ALU_OP),
+        .Out()
     );
 
     // Instantiate Source Operand Handler
