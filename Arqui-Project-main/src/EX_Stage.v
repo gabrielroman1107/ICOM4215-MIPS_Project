@@ -3,7 +3,7 @@ module EX_Stage (
     input reset,
     input [17:0] control_signals,
     output reg [17:0] control_signals_out,
-    output reg [2:0] alu_op_reg,
+    output reg [3:0] alu_op_reg,
     output reg branch_reg,
     output reg load_instr_reg,
     output reg rf_enable_reg,

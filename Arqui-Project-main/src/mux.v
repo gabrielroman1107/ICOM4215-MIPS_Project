@@ -43,3 +43,44 @@ always @ (*)
 	endcase
 	end
 endmodule
+
+module  mux_4x1  (
+	output reg [31:0] Y, input [1:0] S, 
+	input [31:0] I0, I1, I2, I3
+				 );
+always @ (*) begin
+	case (S)
+		2'b00: Y = I0;
+		2'b01: Y = I1;
+		2'b10: Y = I2;
+		2'b11: Y = I3;
+	endcase
+	end
+endmodule
+
+module  mux_3x1 (
+	output reg [31:0] Y, input [2:0] S, 
+	input [31:0] I0, I1, I2
+				 );
+
+always @ (*) begin
+	case (S)
+		3'b000: Y = I0;
+		3'b001: Y = I1;
+		3'b010: Y = I2;
+	endcase
+	end
+endmodule
+
+module mux_2x1 (
+	output reg [31:0] Y, input S, 
+	input [31:0] I0, I1
+				 );
+
+always @ (*) begin
+	case (S)
+		0: Y = I0;
+		1: Y = I1;
+	endcase
+	end
+endmodule

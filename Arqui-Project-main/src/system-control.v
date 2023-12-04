@@ -7,6 +7,9 @@
 `include "hazarding-unit.v"
 `include "registerFile.v"
 `include "dataMemory.v"
+`include "ALU.v"
+`include "Operand2Handler.v"
+`include "condition-handler.v"
 
 
 module system_control (
@@ -127,7 +130,7 @@ reg S;
 
         // Instantiate Instruction Memory
     InstructionMemory imem(
-        .A(pc.pc_out),
+        .A(pc.pc_out[8:0]),
         .I(instruction_wire_out)
     );
 
@@ -167,7 +170,7 @@ reg S;
 
     // Instantiate Data Memory /TODO: Check if this is correct
     DataMemory datamem(
-        .A(pc.pc_out),
+        .A(pc.pc_out[8:0]),
         .DI(register_file.PB),
         .Size(mem_stage.control_signals_out[6:5]), // Data size: 00 (byte), 01 (halfword), 10 (word)
         .R_W(mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
@@ -178,42 +181,53 @@ reg S;
 
     // Instantiate ALU
     ALU ex_alu(
-        .A(muxA.mux_out),
+        .A(muxA.Y),
         .B(register_file.PB),
         .Opcode(ex_stage.alu_op_reg),
+        .Z(),   // Zero flag
+        .N(),   // Negative flag
         .Out()
     );
 
     // Instantiate MUX
-    Mux muxA(
-        .input_0(register_file.PA),
-        .input_1(datamem.DO),
-        .input_2(ex_alu.ALU_OUT),
-        .input_3(pc.pc_out),
-        .input_4(npc.npc_out),
-        .input_5(),
-        .input_6(),
-        .input_7(),
-        .S(ex_stage.SourceOperand_3bits),
-        .mux_out()
+    mux_4x1 muxA(
+        .I0(register_file.PA),
+        .I1(datamem.DO), //CHANGE THIS
+        .I2(ex_alu.Out),
+        .I3(ex_alu.Out),
+        .S(hazard_forwarding_unit.forwardMX1),
+        .Y()
     );
 
     // Instantiate MUX
-    Mux muxB(
-        .input_0(register_file.PA),
-        .input_1(datamem.DO),
-        .input_2(ex_alu.ALU_OUT),
-        .input_3(pc.pc_out),
-        .input_4(npc.npc_out),
-        .input_5(),
-        .input_6(),
-        .input_7(),
-        .S(ex_stage.SourceOperand_3bits),
-        .mux_out()
+    mux_4x1 muxB(
+        .I0(register_file.PA),
+        .I1(datamem.DO), //CHANGE THIS
+        .I2(ex_alu.Out),
+        .I3(ex_alu.Out),
+        .S(hazard_forwarding_unit.forwardMX2),
+        .Y()
+    );
+
+    // Instantiate MUX 2x1 WB
+    mux_2x1 muxWB(
+        .I0(ex_alu.Out),
+        .I1(datamem.DO), //CHANGE THIS
+        .S(mem_stage.control_signals_out[1]),
+        .Y()
+    );
+
+
+
+// Instantiate PC+8 ALU
+    ALU pc8_alu(
+        .B(pc.pc_out),
+        .Opcode(control_unit.ID_ALU_OP),
+        .Out()
     );
 
     // Instantiate Source Operand Handler
-    SourceOperandHandler source_operand_handler(
+    Operand2_Handler source_operand_handler(
         .PB(),
         .HI(),
         .LO(),
@@ -221,6 +235,17 @@ reg S;
         .imm16(if_stage.instruction_reg[15:0]),
         .S(control_unit.ID_SourceOperand_3bits),
         .N()
+    );
+
+    // Instantiate Condition Handler
+    condition_handler condition_handler(
+        .Z(ex_alu.Z),
+        .N(ex_alu.N),
+        .ID_branch_instr(control_unit.ID_B_Instr),
+        .opcode(if_stage.instruction_reg[31:26]),
+        .rs(if_stage.instruction_reg[25:21]),
+        .rt(if_stage.instruction_reg[20:16]),
+        .branch_out()
     );
 
 
