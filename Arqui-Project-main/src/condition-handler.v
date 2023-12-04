@@ -1,46 +1,29 @@
 
 module condition_handler (
-input [3:0] flags,
-input [3:0] cond,
+input wire Z,
+input wire N,
+input wire [5:0] opcode,
+input wire [4:0] rs,
+input wire [4:0] rt,
 input ID_branch_instr,
 output reg branch_out
 );
 
-// Order of Condition flags
-// Z -> Zero
-// N -> Negative
-// C -> Carry
-// V -> Overflow
+        always @(*) begin
+                // Condition handling logic
+                case (opcode)
+                6'b000000: // BEQ
+                    branch_out <= (Z == 1);
+                6'b000001: // BNE
+                    branch_out <= (Z == 0);
+                6'b000010: // BLT
+                    branch_out <= (N == 1);
+                6'b000011: // BGE
+                    branch_out <= (N == 0);
+                // Add more conditions as needed
+                default:
+                    branch_out <= 0; // Default case
+            endcase
+        end
 
-reg Z, N, C, V;
-
-always @(flags) begin
-    Z <= flags[3];
-    N <= flags[2];
-    C <= flags[1];
-    V <= flags[0];
-end
-
-always @* begin
-    if (ID_branch_instr) begin
-        case (cond)
-            4'b0000: branch_out = ID_branch_instr; // Branch Never
-            4'b0001: branch_out = Z; // Branch on Equals
-            4'b0010: branch_out = Z | (N ^ V); // Branch on less or Equal
-            4'b0011: branch_out = N ^ V; // Branch on Less - bl
-            4'b0100: branch_out = C | Z; // Branch on Less or Equal Unsigned - bleu
-            4'b0101: branch_out = C ; // Branch on Carry = 1 - bcs
-            4'b0110: branch_out = N; // Branch on Negative - bneg
-            4'b0111: branch_out = V; // Branch Overreflow = 1 - bvs
-            4'b1000: branch_out = 1'b1; // Branch Always - ba
-            4'b1001: branch_out = ~Z; // Branch on not Equals - bne
-            4'b1010: branch_out = ~(Z | (N ^ V)); // Branch on Greater - bg
-            4'b1011: branch_out = ~(N ^ V); // Branch on Greater or Equal - bge
-            4'b1100: branch_out = ~(C | Z); // Branch on Greater Unsigned - bgu
-            4'b1101: branch_out = ~C; // Branch on Carry = 0 - bcc
-            4'b1110: branch_out = ~N; // Branch on Positive - bpos
-            4'b1111: branch_out = ~V; // Branch overreflow = 0 - bvc
-        endcase
-    end else branch_out <= 1'b0; // Output 0 when ID_branch_instr is 0
-end
 endmodule

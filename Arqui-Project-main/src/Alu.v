@@ -1,7 +1,7 @@
 module ALU (
-    input [31:0] A,
-    input [31:0] B,
-    input [3:0] Opcode,
+    input wire [31:0] A,
+    input wire [31:0] B,
+    input wire [3:0] Opcode,
     output reg [31:0] Out,
     output reg Z,
     output reg N
