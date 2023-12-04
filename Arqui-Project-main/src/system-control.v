@@ -288,12 +288,12 @@ always @(posedge clk) begin
     $display("\nID:\nControl Signals=%b", id_stage.control_signals_out);
     $display("\nID_SourceOperand_3bits=%b, ID_ALU_OP=%b, ID_B_Instr=%b, ID_Load_Instr=%b, ID_RF_Enable=%b,  \nID_TA_Instr=%b, ID_MEM_Size=%b, ID_MEM_RW=%b, ID_MEM_SE=%b, ID_MEM_Enable=%b, ID_Enable_HI=%b, ID_Enable_LO=%b", id_stage.control_signals_out[17:15],id_stage.control_signals_out[14:11], id_stage.control_signals_out[10], id_stage.control_signals_out[9], id_stage.control_signals_out[8], id_stage.control_signals_out[7], id_stage.control_signals_out[6:5], id_stage.control_signals_out[4], id_stage.control_signals_out[3], id_stage.control_signals_out[2], id_stage.control_signals_out[1], id_stage.control_signals_out[0]);
     
-    $display("\nEX:\nControl Signals=%b", ex_stage.control_signals_out);
+    $display("\nEX:\nControl Signals=%b", ex_stage.control_signals_out[17:7]);
     $display("\nEX_SourceOperand_3bits=%b, EX_ALU_OP=%b, EX_B_Instr=%b,\nEX_Load_Instr=%b, EX_RF_Enable=%b, EX_TA_Instr=%b", ex_stage.control_signals_out[17:15],ex_stage.control_signals_out[14:11], ex_stage.control_signals_out[10], ex_stage.control_signals_out[9], ex_stage.control_signals_out[8], ex_stage.control_signals_out[7]);
     
-    $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out);
+    $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out[9:2]);
     $display("\nMEM_Load_Instr=%b, MEM_RF_Enable=%b, MEM_TA_Instr=%b, MEM_MEM_Size=%b, MEM_MEM_RW=%b, MEM_MEM_SE=%b, MEM_MEM_Enable=%b", mem_stage.control_signals_out[9], mem_stage.control_signals_out[8], mem_stage.control_signals_out[7], mem_stage.control_signals_out[6:5], mem_stage.control_signals_out[4], mem_stage.control_signals_out[3], mem_stage.control_signals_out[2]);
-    $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out);
+    $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out[8:0]);
     $display("\nWB_RF_Enable=%b, WB_TA_Instr=%b, WB_HI=%b, WB_LO=%b", wb_stage.control_signals_out[8], wb_stage.control_signals_out[7], wb_stage.control_signals_out[1],wb_stage.control_signals_out[0]);
     $display("**************************************************************************");
 
