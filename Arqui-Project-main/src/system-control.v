@@ -168,6 +168,16 @@ reg S;
         .PB()
     );
 
+    Register reg1 (.Q(register_file.I1),  .D(PW), .clk(clk), .Ld(E[1]));
+    Register reg3 (.Q(register_file.I3),  .D(PW), .clk(clk), .Ld(E[3]));
+    Register reg4 (.Q(register_file.I4),  .D(PW), .clk(clk), .Ld(E[4]));
+    Register reg5 (.Q(register_file.I5),  .D(PW), .clk(clk), .Ld(E[5]));
+    Register reg8 (.Q(register_file.I8),  .D(PW), .clk(clk), .Ld(E[8]));
+    Register reg10 (.Q(register_file.I10),  .D(PW), .clk(clk), .Ld(E[10]));
+    Register reg11 (.Q(register_file.I11),  .D(PW), .clk(clk), .Ld(E[11]));
+    Register reg12 (.Q(register_file.I12),  .D(PW), .clk(clk), .Ld(E[12]));
+
+
     // Instantiate Data Memory /TODO: Check if this is correct
     DataMemory datamem(
         .A(pc.pc_out[8:0]),
@@ -237,19 +247,23 @@ reg S;
         .N()
     );
 
-    // Instantiate Condition Handler
-    condition_handler condition_handler(
-        .Z(ex_alu.Z),
-        .N(ex_alu.N),
-        .ID_branch_instr(control_unit.ID_B_Instr),
-        .opcode(if_stage.instruction_reg[31:26]),
-        .rs(if_stage.instruction_reg[25:21]),
-        .rt(if_stage.instruction_reg[20:16]),
-        .branch_out()
-    );
+    // // Instantiate Condition Handler
+    // condition_handler condition_handler(
+    //     .Z(ex_alu.Z),
+    //     .N(ex_alu.N),
+    //     .ID_branch_instr(control_unit.ID_B_Instr),
+    //     .opcode(if_stage.instruction_reg[31:26]),
+    //     .rs(if_stage.instruction_reg[25:21]),
+    //     .rt(if_stage.instruction_reg[20:16]),
+    //     .branch_out()
+    // );
 
 
 initial begin
+
+    $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
+    pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
+
     $readmemb("precargas/phase4.txt", imem.mem);
 end
 
@@ -263,7 +277,7 @@ end
     #3 reset = 1'b0; // Remove the reset
     S = 1'b0; 
     #40 S = 1'b1; // Set the S signal
-    #56 $finish;
+    #48 $finish;
 join
 
 always @(posedge clk) begin
@@ -283,19 +297,19 @@ always @(posedge clk) begin
 
   
     // Print keyword, PC, nPC, and control signals
-    $display("\nInstruction=%b", instruction_wire_out);
-    $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_stage.instruction_reg);
-    $display("\nID:\nControl Signals=%b", id_stage.control_signals_out);
-    $display("\nID_SourceOperand_3bits=%b, ID_ALU_OP=%b, ID_B_Instr=%b, ID_Load_Instr=%b, ID_RF_Enable=%b,  \nID_TA_Instr=%b, ID_MEM_Size=%b, ID_MEM_RW=%b, ID_MEM_SE=%b, ID_MEM_Enable=%b, ID_Enable_HI=%b, ID_Enable_LO=%b", id_stage.control_signals_out[17:15],id_stage.control_signals_out[14:11], id_stage.control_signals_out[10], id_stage.control_signals_out[9], id_stage.control_signals_out[8], id_stage.control_signals_out[7], id_stage.control_signals_out[6:5], id_stage.control_signals_out[4], id_stage.control_signals_out[3], id_stage.control_signals_out[2], id_stage.control_signals_out[1], id_stage.control_signals_out[0]);
+    // $display("\nInstruction=%b", instruction_wire_out);
+    // $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_stage.instruction_reg);
+    // $display("\nID:\nControl Signals=%b", id_stage.control_signals_out);
+    // $display("\nID_SourceOperand_3bits=%b, ID_ALU_OP=%b, ID_B_Instr=%b, ID_Load_Instr=%b, ID_RF_Enable=%b,  \nID_TA_Instr=%b, ID_MEM_Size=%b, ID_MEM_RW=%b, ID_MEM_SE=%b, ID_MEM_Enable=%b, ID_Enable_HI=%b, ID_Enable_LO=%b", id_stage.control_signals_out[17:15],id_stage.control_signals_out[14:11], id_stage.control_signals_out[10], id_stage.control_signals_out[9], id_stage.control_signals_out[8], id_stage.control_signals_out[7], id_stage.control_signals_out[6:5], id_stage.control_signals_out[4], id_stage.control_signals_out[3], id_stage.control_signals_out[2], id_stage.control_signals_out[1], id_stage.control_signals_out[0]);
     
-    $display("\nEX:\nControl Signals=%b", ex_stage.control_signals_out[17:7]);
-    $display("\nEX_SourceOperand_3bits=%b, EX_ALU_OP=%b, EX_B_Instr=%b,\nEX_Load_Instr=%b, EX_RF_Enable=%b, EX_TA_Instr=%b", ex_stage.control_signals_out[17:15],ex_stage.control_signals_out[14:11], ex_stage.control_signals_out[10], ex_stage.control_signals_out[9], ex_stage.control_signals_out[8], ex_stage.control_signals_out[7]);
+    // $display("\nEX:\nControl Signals=%b", ex_stage.control_signals_out[17:7]);
+    // $display("\nEX_SourceOperand_3bits=%b, EX_ALU_OP=%b, EX_B_Instr=%b,\nEX_Load_Instr=%b, EX_RF_Enable=%b, EX_TA_Instr=%b", ex_stage.control_signals_out[17:15],ex_stage.control_signals_out[14:11], ex_stage.control_signals_out[10], ex_stage.control_signals_out[9], ex_stage.control_signals_out[8], ex_stage.control_signals_out[7]);
     
-    $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out[9:2]);
-    $display("\nMEM_Load_Instr=%b, MEM_RF_Enable=%b, MEM_TA_Instr=%b, MEM_MEM_Size=%b, MEM_MEM_RW=%b, MEM_MEM_SE=%b, MEM_MEM_Enable=%b", mem_stage.control_signals_out[9], mem_stage.control_signals_out[8], mem_stage.control_signals_out[7], mem_stage.control_signals_out[6:5], mem_stage.control_signals_out[4], mem_stage.control_signals_out[3], mem_stage.control_signals_out[2]);
-    $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out[8:0]);
-    $display("\nWB_RF_Enable=%b, WB_TA_Instr=%b, WB_HI=%b, WB_LO=%b", wb_stage.control_signals_out[8], wb_stage.control_signals_out[7], wb_stage.control_signals_out[1],wb_stage.control_signals_out[0]);
-    $display("**************************************************************************");
+    // $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out[9:2]);
+    // $display("\nMEM_Load_Instr=%b, MEM_RF_Enable=%b, MEM_TA_Instr=%b, MEM_MEM_Size=%b, MEM_MEM_RW=%b, MEM_MEM_SE=%b, MEM_MEM_Enable=%b", mem_stage.control_signals_out[9], mem_stage.control_signals_out[8], mem_stage.control_signals_out[7], mem_stage.control_signals_out[6:5], mem_stage.control_signals_out[4], mem_stage.control_signals_out[3], mem_stage.control_signals_out[2]);
+    // $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out[8:0]);
+    // $display("\nWB_RF_Enable=%b, WB_TA_Instr=%b, WB_HI=%b, WB_LO=%b", wb_stage.control_signals_out[8], wb_stage.control_signals_out[7], wb_stage.control_signals_out[1],wb_stage.control_signals_out[0]);
+    // $display("**************************************************************************");
 
     // // Print DataOut
     // $display("\nDataOut=%b", DataOut);
