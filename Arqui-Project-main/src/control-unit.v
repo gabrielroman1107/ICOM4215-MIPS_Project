@@ -111,19 +111,31 @@ parameter J_OP       = 6'b000010,
     
 	
     // Control signals                  //bit 15-17
-    assign  ID_SourceOperand_3bits  = (instruction[31:26] == ADDIU_OP) ? 3'b001 : 3'b000; // source operand 2 handler sign control 3 bits definit cuan senal sale pa cada instruccion
+    assign  ID_SourceOperand_3bits  = (instruction[31:26] == ADDIU_OP) ? 3'b001 : 3'b000; // source operand 2 handler sign control 3 bits
+   
     assign ID_ALU_OP     = (instruction[31:26] == ADDIU_OP) ? 4'b0001
                        : ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) ? 4'b010 : 4'b000; //bit11-14
-    assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit10 
-    assign ID_RF_Enable = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit9 
-    assign ID_B_Instr    = (instruction[31:26] == I_TYPE)  && (instruction[20:16] == BGEZ_RT )  ? 1'b1 : 1'b0; //bit8
+
+    assign ID_B_Instr    = (instruction[31:26] == I_TYPE)  && (instruction[20:16] == BGEZ_RT )  ? 1'b1 : 1'b0; //bit10
+
+    assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit9
+
+    assign ID_RF_Enable = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit8 
+
     assign ID_TA_Instr   = (instruction[31:26] == JAL_OP) ? 1'b1 : 1'b0; //bit7
+
     assign ID_MEM_Size   = (instruction[31:26] == ADDIU_OP) ? 2'b01  : 2'b00; //bit5-6
+
     assign ID_MEM_RW     = (instruction[31:26] == SB_OP) ? 1'b1 : 1'b0; //bit4
+
     assign ID_MEM_SE    = (instruction[31:26] == LBU_OP) ? 1'b1 : 1'b0; //bit3
-    assign ID_Enable_HI  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit2
-    assign ID_Enable_LO  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit1
-    assign ID_MEM_Enable  = (instruction[31:26] == SB_OP) ? 1'b1 : 1'b0; //bit0
+
+    assign ID_MEM_Enable  = (instruction[31:26] == SB_OP) ? 1'b1 : 1'b0; //bit2
+
+    assign ID_Enable_HI  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit1
+    
+    assign ID_Enable_LO  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit0
+   
 
    
 always @ (instruction) begin
@@ -220,7 +232,7 @@ always @ (instruction) begin
     default: $display("Keyword: Unknown");
 endcase
 
-    control_signals = {ID_SourceOperand_3bits, ID_ALU_OP, ID_Load_Instr, ID_RF_Enable, ID_B_Instr, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
+    control_signals = {ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
 end
 
 endmodule

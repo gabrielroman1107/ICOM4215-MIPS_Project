@@ -3,6 +3,8 @@
 `include "EX_Stage.v"
 `include "MEM_Stage.v"
 `include "WB_Stage.v"
+`include "control-unit.v"
+`include "ID_Mux.v"
 `include "instructionMemory.v"
 `include "hazarding-unit.v"
 `include "registerFile.v"
@@ -10,6 +12,9 @@
 `include "ALU.v"
 `include "Operand2Handler.v"
 `include "condition-handler.v"
+`include "PC-Register.v"
+`include "NPC-Register.v"
+`include "Adder+4.v"
 
 
 module system_control (
@@ -55,24 +60,53 @@ reg S;
 
 
     //Instantiate IF_Stage
-    IF_Stage if_stage(
+    IF_ID_Stage if_id_stage(
+        //inputs
         .clk(clk),
         .reset(reset),
         .instruction_in(instruction_wire_out),
-        .instruction_reg()
+        .load_enable(1'b1),
+        .pc(pc.pc_out[8:0]),
+    
+        //outputs
+        .instruction_reg(),
+        .address_26(),
+        .PC(),
+        .rs(),
+        .rt(),
+        .imm16(),
+        .opcode(),
+        .rd()
     );
 
-    //Instantiate ID_Stage
-    ID_Stage id_stage(
-        .clk(clk),
-        .reset(reset),
-        // .S(S),
-        .instruction_reg(if_stage.instruction_reg),
-        .control_signals_out()
+
+    // Instantiate Control Unit
+    PPU_Control_Unit control_unit(
+        .instruction(if_id_stage.instruction_reg),
+        .control_signals(),
+        .ID_SourceOperand_3bits(),
+        .ID_ALU_OP(),   
+        .ID_Load_Instr(),
+        .ID_RF_Enable(),
+        .ID_B_Instr(),
+        .ID_TA_Instr(),
+        .ID_MEM_Size(),
+        .ID_MEM_RW(),
+        .ID_MEM_SE(),
+        .ID_Enable_HI(),
+        .ID_Enable_LO(),
+        .ID_MEM_Enable()
+    );
+            // Instantiate Mux
+    ID_Mux mux(
+        .input_0(control_unit.control_signals),
+        .S(S),
+        .mux_control_signals(),
+        .ID_branch_instr()
     );
 
     //Instantiate EX_Stage
-    EX_Stage ex_stage(
+    ID_EX_Stage id_ex_stage(
         .clk(clk),
         .reset(reset),
         .control_signals(mux.mux_control_signals),
@@ -86,48 +120,20 @@ reg S;
     );
 
     //Instantiate MEM_Stage
-    MEM_Stage mem_stage(
+    EX_MEM_Stage ex_mem_stage(
         .clk(clk),
         .reset(reset),
-        .control_signals(ex_stage.control_signals_out),
+        .control_signals(id_ex_stage.control_signals_out),
         .control_signals_out()
     );
 
     //Instantiate WB_Stage
-    WB_Stage wb_stage(
+    MEM_WB_Stage mem_wb_stage(
         .clk(clk),
         .reset(reset),
-        .control_signals(mem_stage.control_signals_out),
+        .control_signals(ex_mem_stage.control_signals_out),
         .control_signals_out()
     );
-
-    // Instantiate Control Unit
-        PPU_Control_Unit control_unit(
-            .instruction(id_stage.instruction_reg),
-            .control_signals(),
-            .ID_SourceOperand_3bits(),
-            .ID_ALU_OP(),   
-            .ID_Load_Instr(),
-            .ID_RF_Enable(),
-            .ID_B_Instr(),
-            .ID_TA_Instr(),
-            .ID_MEM_Size(),
-            .ID_MEM_RW(),
-            .ID_MEM_SE(),
-            .ID_Enable_HI(),
-            .ID_Enable_LO(),
-            .ID_MEM_Enable()
-        );
-
-        // Instantiate Mux
-        ID_Mux mux(
-            .input_0(control_unit.control_signals),
-            .S(S),
-            .mux_control_signals(),
-            .ID_branch_instr()
-        );
-
-
         // Instantiate Instruction Memory
     InstructionMemory imem(
         .A(pc.pc_out[8:0]),
@@ -161,31 +167,31 @@ reg S;
         .clk(clk),
         .LE(control_unit.ID_Load_Instr),
         .PW(datamem.DO),
-        .RW(if_stage.instruction_reg[15:11]),
-        .RA(if_stage.instruction_reg[25:21]),
-        .RB(if_stage.instruction_reg[20:16]),
+        .RW(if_id_stage.instruction_reg[15:11]),
+        .RA(if_id_stage.instruction_reg[25:21]),
+        .RB(if_id_stage.instruction_reg[20:16]),
         .PA(),
         .PB()
     );
 
-    Register reg1 (.Q(register_file.I1),  .D(PW), .clk(clk), .Ld(E[1]));
-    Register reg3 (.Q(register_file.I3),  .D(PW), .clk(clk), .Ld(E[3]));
-    Register reg4 (.Q(register_file.I4),  .D(PW), .clk(clk), .Ld(E[4]));
-    Register reg5 (.Q(register_file.I5),  .D(PW), .clk(clk), .Ld(E[5]));
-    Register reg8 (.Q(register_file.I8),  .D(PW), .clk(clk), .Ld(E[8]));
-    Register reg10 (.Q(register_file.I10),  .D(PW), .clk(clk), .Ld(E[10]));
-    Register reg11 (.Q(register_file.I11),  .D(PW), .clk(clk), .Ld(E[11]));
-    Register reg12 (.Q(register_file.I12),  .D(PW), .clk(clk), .Ld(E[12]));
+    // Register reg1 (.Q(register_file.I1),  .D(PW), .clk(clk), .Ld(E[1]));
+    // Register reg3 (.Q(register_file.I3),  .D(PW), .clk(clk), .Ld(E[3]));
+    // Register reg4 (.Q(register_file.I4),  .D(PW), .clk(clk), .Ld(E[4]));
+    // Register reg5 (.Q(register_file.I5),  .D(PW), .clk(clk), .Ld(E[5]));
+    // Register reg8 (.Q(register_file.I8),  .D(PW), .clk(clk), .Ld(E[8]));
+    // Register reg10 (.Q(register_file.I10),  .D(PW), .clk(clk), .Ld(E[10]));
+    // Register reg11 (.Q(register_file.I11),  .D(PW), .clk(clk), .Ld(E[11]));
+    // Register reg12 (.Q(register_file.I12),  .D(PW), .clk(clk), .Ld(E[12]));
 
 
     // Instantiate Data Memory /TODO: Check if this is correct
     DataMemory datamem(
         .A(pc.pc_out[8:0]),
         .DI(register_file.PB),
-        .Size(mem_stage.control_signals_out[6:5]), // Data size: 00 (byte), 01 (halfword), 10 (word)
-        .R_W(mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
-        .E(mem_stage.control_signals_out[2]), // Enable signal
-        .SE(mem_stage.control_signals_out[3]), // Sign extension signal for halfword and byte operations
+        .Size(ex_mem_stage.control_signals_out[6:5]), // Data size: 00 (byte), 01 (halfword), 10 (word)
+        .R_W(ex_mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
+        .E(ex_mem_stage.control_signals_out[2]), // Enable signal
+        .SE(ex_mem_stage.control_signals_out[3]), // Sign extension signal for halfword and byte operations
         .DO() // Data output 
     );
 
@@ -193,7 +199,7 @@ reg S;
     ALU ex_alu(
         .A(muxA.Y),
         .B(register_file.PB),
-        .Opcode(ex_stage.alu_op_reg),
+        .Opcode(id_ex_stage.alu_op_reg),
         .Z(),   // Zero flag
         .N(),   // Negative flag
         .Out()
@@ -223,7 +229,7 @@ reg S;
     mux_2x1 muxWB(
         .I0(ex_alu.Out),
         .I1(datamem.DO), //CHANGE THIS
-        .S(mem_stage.control_signals_out[1]),
+        .S(ex_mem_stage.control_signals_out[1]),
         .Y()
     );
 
@@ -242,7 +248,7 @@ reg S;
         .HI(),
         .LO(),
         .PC(pc.pc_out),
-        .imm16(if_stage.instruction_reg[15:0]),
+        .imm16(if_id_stage.instruction_reg[15:0]),
         .S(control_unit.ID_SourceOperand_3bits),
         .N()
     );
@@ -252,23 +258,21 @@ reg S;
     //     .Z(ex_alu.Z),
     //     .N(ex_alu.N),
     //     .ID_branch_instr(control_unit.ID_B_Instr),
-    //     .opcode(if_stage.instruction_reg[31:26]),
-    //     .rs(if_stage.instruction_reg[25:21]),
-    //     .rt(if_stage.instruction_reg[20:16]),
+    //     .opcode(if_id_stage.instruction_reg[31:26]),
+    //     .rs(if_id_stage.instruction_reg[25:21]),
+    //     .rt(if_id_stage.instruction_reg[20:16]),
     //     .branch_out()
     // );
 
+initial forever 
+    #2 clk = ~clk;
 
 initial begin
 
-    $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
-    pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
+    // $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
+    // pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
 
-    $readmemb("precargas/phase4.txt", imem.mem);
-end
-
-always begin
-    #2 clk = ~clk;
+    $readmemb("precargas/instructions.txt", imem.mem);
 end
 
   initial fork
@@ -280,14 +284,14 @@ end
     #48 $finish;
 join
 
-always @(posedge clk) begin
+// always @(posedge clk) begin
 
-    // Apply S signal
-    #40 S = 1'b1;
+//     // Apply S signal
+//     #40 S = 1'b1;
 
-    // Simulate until time 48
+//     // Simulate until time 48
     
-  end
+//   end
 
   // Display information at each clock cycle
   always @(posedge clk) begin
@@ -298,19 +302,18 @@ always @(posedge clk) begin
   
     // Print keyword, PC, nPC, and control signals
     // $display("\nInstruction=%b", instruction_wire_out);
-    // $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_stage.instruction_reg);
-    // $display("\nID:\nControl Signals=%b", id_stage.control_signals_out);
-    // $display("\nID_SourceOperand_3bits=%b, ID_ALU_OP=%b, ID_B_Instr=%b, ID_Load_Instr=%b, ID_RF_Enable=%b,  \nID_TA_Instr=%b, ID_MEM_Size=%b, ID_MEM_RW=%b, ID_MEM_SE=%b, ID_MEM_Enable=%b, ID_Enable_HI=%b, ID_Enable_LO=%b", id_stage.control_signals_out[17:15],id_stage.control_signals_out[14:11], id_stage.control_signals_out[10], id_stage.control_signals_out[9], id_stage.control_signals_out[8], id_stage.control_signals_out[7], id_stage.control_signals_out[6:5], id_stage.control_signals_out[4], id_stage.control_signals_out[3], id_stage.control_signals_out[2], id_stage.control_signals_out[1], id_stage.control_signals_out[0]);
+    // $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_id_stage.instruction_reg);
+    $display("\nIF/ID:\nInstruction=%b\nPC=%0d, nPC=%0d", if_id_stage.instruction_reg, pc.pc_out, npc.npc_out);
     
-    // $display("\nEX:\nControl Signals=%b", ex_stage.control_signals_out[17:7]);
-    // $display("\nEX_SourceOperand_3bits=%b, EX_ALU_OP=%b, EX_B_Instr=%b,\nEX_Load_Instr=%b, EX_RF_Enable=%b, EX_TA_Instr=%b", ex_stage.control_signals_out[17:15],ex_stage.control_signals_out[14:11], ex_stage.control_signals_out[10], ex_stage.control_signals_out[9], ex_stage.control_signals_out[8], ex_stage.control_signals_out[7]);
+    $display("\nID/EX:\nControl Signal=%b", mux.mux_control_signals);
+    $display("\nID/EX_SourceOperand_3bits=%b, ID/EX_ALU_OP=%b, ID/EX_B_Instr=%b, ID/EX_Load_Instr=%b, ID/EX_RF_Enable=%b,  \nID/EX_TA_Instr=%b, ID/EX_MEM_Size=%b, ID/EX_MEM_RW=%b, ID/EX_MEM_SE=%b, ID/EX_MEM_Enable=%b, ID/EX_Enable_HI=%b, ID/EX_Enable_LO=%b", mux.mux_control_signals[17:15],mux.mux_control_signals[14:11], mux.mux_control_signals[10], mux.mux_control_signals[9], mux.mux_control_signals[8], mux.mux_control_signals[7], mux.mux_control_signals[6:5], mux.mux_control_signals[4], mux.mux_control_signals[3], mux.mux_control_signals[2], mux.mux_control_signals[1], mux.mux_control_signals[0]);
     
-    // $display("\nMEM:\nControl Signals=%b", mem_stage.control_signals_out[9:2]);
-    // $display("\nMEM_Load_Instr=%b, MEM_RF_Enable=%b, MEM_TA_Instr=%b, MEM_MEM_Size=%b, MEM_MEM_RW=%b, MEM_MEM_SE=%b, MEM_MEM_Enable=%b", mem_stage.control_signals_out[9], mem_stage.control_signals_out[8], mem_stage.control_signals_out[7], mem_stage.control_signals_out[6:5], mem_stage.control_signals_out[4], mem_stage.control_signals_out[3], mem_stage.control_signals_out[2]);
-    // $display("\nWB:\nControl Signals=%b", wb_stage.control_signals_out[8:0]);
-    // $display("\nWB_RF_Enable=%b, WB_TA_Instr=%b, WB_HI=%b, WB_LO=%b", wb_stage.control_signals_out[8], wb_stage.control_signals_out[7], wb_stage.control_signals_out[1],wb_stage.control_signals_out[0]);
-    // $display("**************************************************************************");
-
+    $display("\nEX/MEM:\nControl Signal=%b", ex_mem_stage.control_signals_out);
+    $display("\nEX/MEM_SourceOperand_3bits=%b, EX/MEM_ALU_OP=%b, EX/MEM_B_Instr=%b, EX/MEM_Load_Instr=%b, EX/MEM_RF_Enable=%b,  \nEX/MEM_TA_Instr=%b, EX/MEM_MEM_Size=%b, EX/MEM_MEM_RW=%b, EX/MEM_MEM_SE=%b, EX/MEM_MEM_Enable=%b, EX/MEM_Enable_HI=%b, EX/MEM_Enable_LO=%b", ex_mem_stage.control_signals_out[17:15],ex_mem_stage.control_signals_out[14:11], ex_mem_stage.control_signals_out[10], ex_mem_stage.control_signals_out[9], ex_mem_stage.control_signals_out[8], ex_mem_stage.control_signals_out[7], ex_mem_stage.control_signals_out[6:5], ex_mem_stage.control_signals_out[4], ex_mem_stage.control_signals_out[3], ex_mem_stage.control_signals_out[2], ex_mem_stage.control_signals_out[1], ex_mem_stage.control_signals_out[0]);
+    
+    $display("\nMEM/WB:\nControl Signal=%b", mem_wb_stage.control_signals_out);
+    $display("\nMEM/WB_SourceOperand_3bits=%b, MEM/WB_ALU_OP=%b, MEM/WB_B_Instr=%b, MEM/WB_Load_Instr=%b, MEM/WB_RF_Enable=%b,  \nMEM/WB_TA_Instr=%b, MEM/WB_MEM_Size=%b, MEM/WB_MEM_RW=%b, MEM/WB_MEM_SE=%b, MEM/WB_MEM_Enable=%b, MEM/WB_Enable_HI=%b, MEM/WB_Enable_LO=%b", mem_wb_stage.control_signals_out[17:15],mem_wb_stage.control_signals_out[14:11], mem_wb_stage.control_signals_out[10], mem_wb_stage.control_signals_out[9], mem_wb_stage.control_signals_out[8], mem_wb_stage.control_signals_out[7], mem_wb_stage.control_signals_out[6:5], mem_wb_stage.control_signals_out[4], mem_wb_stage.control_signals_out[3], mem_wb_stage.control_signals_out[2], mem_wb_stage.control_signals_out[1], mem_wb_stage.control_signals_out[0]);
+    $display("======================================================================================================================================\n");
     // // Print DataOut
     // $display("\nDataOut=%b", DataOut);
 
