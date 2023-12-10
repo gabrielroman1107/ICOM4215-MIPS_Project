@@ -84,3 +84,16 @@ always @ (*) begin
 	endcase
 	end
 endmodule
+
+module TA_Mux (
+	output reg [31:0] Y, input S, 
+	input [31:0] I0, I1
+				 );
+
+always @ (*) begin
+	case (S)
+		0: Y = I0;
+		1: Y = I1;
+	endcase
+	end
+endmodule
