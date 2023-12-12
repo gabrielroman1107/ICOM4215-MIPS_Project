@@ -1,8 +1,7 @@
-`include "IF_Stage.v"
-`include "ID_Stage.v"
-`include "EX_Stage.v"
-`include "MEM_Stage.v"
-`include "WB_Stage.v"
+`include "IF_ID_Stage.v"
+`include "ID_EX_Stage.v"
+`include "EX_MEM_Stage.v"
+`include "MEM_WB_Stage.v"
 `include "control-unit.v"
 `include "ID_Mux.v"
 `include "instructionMemory.v"
@@ -11,7 +10,7 @@
 `include "dataMemory.v"
 `include "ALU.v"
 `include "Operand2Handler.v"
-`include "condition-handler.v"
+// `include "condition-handler.v"
 `include "PC-Register.v"
 `include "NPC-Register.v"
 `include "Adder+4.v"
@@ -140,27 +139,27 @@ reg S;
         .I(instruction_wire_out)
     );
 
-    // Instantiate Hazard Forwarding Unit /TODO: Check if this is correct
-    hazard_forwarding_unit hazard_forwarding_unit(
-        .forwardMX1(),
-        .forwardMX2(),
-        .forwardMX3(),
-        .nPC_LE(),
-        .PC_LE(),
-        .IF_ID_LE(),
-        .CU_S(),
-        .EX_Register_File_Enable(),
-        .MEM_Register_File_Enable(),
-        .WB_Register_File_Enable(),
-        .EX_RD(),
-        .MEM_RD(),
-        .WB_RD(),
-        .ID_rs1(),
-        .ID_rs2(),
-        .ID_rd(),
-        .EX_load_instr(),
-        .ID_store_instr()
-    );
+    // // Instantiate Hazard Forwarding Unit /TODO: Check if this is correct
+    // hazard_forwarding_unit hazard_forwarding_unit(
+    //     .forwardMX1(),
+    //     .forwardMX2(),
+    //     .forwardMX3(),
+    //     .nPC_LE(),
+    //     .PC_LE(),
+    //     .IF_ID_LE(),
+    //     .CU_S(),
+    //     .EX_Register_File_Enable(),
+    //     .MEM_Register_File_Enable(),
+    //     .WB_Register_File_Enable(),
+    //     .EX_RD(),
+    //     .MEM_RD(),
+    //     .WB_RD(),
+    //     .ID_rs1(),
+    //     .ID_rs2(),
+    //     .ID_rd(),
+    //     .EX_load_instr(),
+    //     .ID_store_instr()
+    // );
 
     // Instantiate Register File /TODO: Check if this is correct
     RegisterFile register_file(
@@ -304,7 +303,7 @@ join
     // $display("\nInstruction=%b", instruction_wire_out);
     // $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_id_stage.instruction_reg);
     $display("\nIF/ID:\nInstruction=%b\nPC=%0d, nPC=%0d", if_id_stage.instruction_reg, pc.pc_out, npc.npc_out);
-    
+    $display("\nControl Signal Output =%b", control_unit.control_signals);
     $display("\nID/EX:\nControl Signal=%b", mux.mux_control_signals);
     $display("\nID/EX_SourceOperand_3bits=%b, ID/EX_ALU_OP=%b, ID/EX_B_Instr=%b, ID/EX_Load_Instr=%b, ID/EX_RF_Enable=%b,  \nID/EX_TA_Instr=%b, ID/EX_MEM_Size=%b, ID/EX_MEM_RW=%b, ID/EX_MEM_SE=%b, ID/EX_MEM_Enable=%b, ID/EX_Enable_HI=%b, ID/EX_Enable_LO=%b", mux.mux_control_signals[17:15],mux.mux_control_signals[14:11], mux.mux_control_signals[10], mux.mux_control_signals[9], mux.mux_control_signals[8], mux.mux_control_signals[7], mux.mux_control_signals[6:5], mux.mux_control_signals[4], mux.mux_control_signals[3], mux.mux_control_signals[2], mux.mux_control_signals[1], mux.mux_control_signals[0]);
     
