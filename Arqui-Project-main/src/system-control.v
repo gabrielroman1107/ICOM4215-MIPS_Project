@@ -100,8 +100,8 @@ reg S;
     ID_Mux mux(
         .input_0(control_unit.control_signals),
         .S(S),
-        .mux_control_signals(),
-        .ID_branch_instr()
+        .mux_control_signals()//,
+        //.ID_branch_instr()
     );
 
     //Instantiate EX_Stage

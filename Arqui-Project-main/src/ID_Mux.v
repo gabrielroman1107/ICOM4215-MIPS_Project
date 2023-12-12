@@ -1,8 +1,8 @@
 module ID_Mux(
     input wire [17:0] input_0,
     input S,
-    output reg [17:0] mux_control_signals,
-    output reg ID_branch_instr
+    output reg [17:0] mux_control_signals
+    // output reg ID_branch_instr
 );
 
 always @ (*) begin
