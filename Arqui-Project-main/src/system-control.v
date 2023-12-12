@@ -64,18 +64,8 @@ reg S;
         .clk(clk),
         .reset(reset),
         .instruction_in(instruction_wire_out),
-        .load_enable(1'b1),
-        .pc(pc.pc_out[8:0]),
-    
         //outputs
-        .instruction_reg(),
-        .address_26(),
-        .PC(),
-        .rs(),
-        .rt(),
-        .imm16(),
-        .opcode(),
-        .rd()
+        .instruction_reg()
     );
 
 
@@ -135,7 +125,7 @@ reg S;
     );
         // Instantiate Instruction Memory
     InstructionMemory imem(
-        .A(pc.pc_out[8:0]),
+        .A(pc.pc_out),
         .I(instruction_wire_out)
     );
 
@@ -234,23 +224,23 @@ reg S;
 
 
 
-// Instantiate PC+8 ALU
-    ALU pc8_alu(
-        .B(pc.pc_out),
-        .Opcode(control_unit.ID_ALU_OP),
-        .Out()
-    );
+// Instantiate PC+8 ALU             \\ADD SIGN EXTENSION TO PC BEFORE INSERTING INTO ALU AND OPERAND HANDLER
+    // ALU pc8_alu(
+    //     .B(pc.pc_out),
+    //     .Opcode(control_unit.ID_ALU_OP),
+    //     .Out()
+    // );
 
-    // Instantiate Source Operand Handler
-    Operand2_Handler source_operand_handler(
-        .PB(),
-        .HI(),
-        .LO(),
-        .PC(pc.pc_out),
-        .imm16(if_id_stage.instruction_reg[15:0]),
-        .S(control_unit.ID_SourceOperand_3bits),
-        .N()
-    );
+    // // Instantiate Source Operand Handler
+    // Operand2_Handler source_operand_handler(
+    //     .PB(),
+    //     .HI(),
+    //     .LO(),
+    //     .PC(pc.pc_out),
+    //     .imm16(if_id_stage.instruction_reg[15:0]),
+    //     .S(control_unit.ID_SourceOperand_3bits),
+    //     .N()
+    // );
 
     // // Instantiate Condition Handler
     // condition_handler condition_handler(
@@ -271,7 +261,7 @@ initial begin
     // $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
     // pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
 
-    $readmemb("precargas/instructions.txt", imem.mem);
+    $readmemb("precargas/phase4.txt", imem.mem);
 end
 
   initial fork
@@ -280,7 +270,7 @@ end
     #3 reset = 1'b0; // Remove the reset
     S = 1'b0; 
     #40 S = 1'b1; // Set the S signal
-    #48 $finish;
+    #52 $finish;
 join
 
 // always @(posedge clk) begin
