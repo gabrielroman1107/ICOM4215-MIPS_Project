@@ -4,7 +4,7 @@ module IF_ID_Stage ( //IF_ID
     input  [31:0] instruction_in,
     input wire load_enable,
     input [8:0] pc,
-    //input logic_box,
+    input logic_box,
     output reg [31:0] instruction_reg,
     output reg [25:0] address_26, // bit 25:0 de instruction 
     output reg [8:0] PC, //bit8:0  entrada desde PC
@@ -16,7 +16,7 @@ module IF_ID_Stage ( //IF_ID
 );
 
     // Fetch stage logic
-always @(posedge clk) begin
+always @(clk) begin
     if (reset) begin
         instruction_reg <= 32'b0;
         address_26 <= 26'b0;
@@ -27,7 +27,7 @@ always @(posedge clk) begin
         opcode <= 6'b0;
         rd <= 6'b0;
 
-    end else if (load_enable) begin
+    end else if (load_enable)  begin 
     instruction_reg <= instruction_in;
 
     if(instruction_in[31:26] == 6'b0) begin //R-type instructions

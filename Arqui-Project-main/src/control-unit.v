@@ -1,7 +1,7 @@
 
 module PPU_Control_Unit (
     input wire [31:0] instruction,
-    output reg [17:0] control_signals,
+    output reg [21:0] control_signals,
     
     output wire [2:0] ID_SourceOperand_3bits,
     output wire [3:0] ID_ALU_OP,
@@ -14,7 +14,11 @@ module PPU_Control_Unit (
     output wire ID_MEM_SE,
     output wire ID_Enable_HI,
     output wire ID_Enable_LO,
-    output wire ID_MEM_Enable
+    output wire ID_MEM_Enable,
+    output wire Unconditional_Jump,
+    output wire Destination_Register,
+    output wire R31,
+    output wire Conditional_Unconditional_jump
 );
 
 
@@ -116,7 +120,7 @@ parameter J_OP       = 6'b000010,
     assign ID_ALU_OP     = (instruction[31:26] == ADDIU_OP) ? 4'b0001
                        : ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) ? 4'b010 : 4'b000; //bit11-14
 
-    assign ID_B_Instr    = (instruction[31:26] == I_TYPE)  && (instruction[20:16] == BGEZ_RT )  ? 1'b1 : 1'b0; //bit10
+    assign ID_B_Instr    = (instruction[31:26] == I_TYPE)  ? 1'b1 : 1'b0; //bit10
 
     assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit9
 
@@ -135,6 +139,13 @@ parameter J_OP       = 6'b000010,
     assign ID_Enable_HI  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit1
     
     assign ID_Enable_LO  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit0
+
+    //to do: generate the correct control signals for the rest of the instructions
+    //set to 0 for now
+    assign Unconditional_Jump = 0;
+    assign Destination_Register = 0;
+    assign R31 = 0;
+    assign Conditional_Unconditional_jump = 0;
    
 
    
