@@ -5,7 +5,7 @@
 `include "control-unit.v"
 `include "ID_Mux.v"
 `include "instructionMemory.v"
-`include "hazarding-unit.v"
+`include "hazardingforwarding.v"
 `include "registerFile.v"
 `include "dataMemory.v"
 `include "ALU.v"
@@ -121,6 +121,8 @@ reg S;
         .clk(clk),
         .reset(reset),
         .control_signals(id_ex_stage.control_signals_out),
+        .alu_result(ex_alu.Out),
+        .alu_result_out(),
         .control_signals_out()
     );
 
@@ -137,27 +139,24 @@ reg S;
         .I(instruction_wire_out)
     );
 
-    // // Instantiate Hazard Forwarding Unit /TODO: Check if this is correct
-    // hazard_forwarding_unit hazard_forwarding_unit(
-    //     .forwardMX1(),
-    //     .forwardMX2(),
-    //     .forwardMX3(),
-    //     .nPC_LE(),
-    //     .PC_LE(),
-    //     .IF_ID_LE(),
-    //     .CU_S(),
-    //     .EX_Register_File_Enable(),
-    //     .MEM_Register_File_Enable(),
-    //     .WB_Register_File_Enable(),
-    //     .EX_RD(),
-    //     .MEM_RD(),
-    //     .WB_RD(),
-    //     .ID_rs1(),
-    //     .ID_rs2(),
-    //     .ID_rd(),
-    //     .EX_load_instr(),
-    //     .ID_store_instr()
-    // );
+    // Instantiate Hazard Forwarding Unit
+    HAZARD_FORWARDING_UNIT HazardForwardingUnit(
+        .ex_destination(), 
+        .mem_destination(),
+        .wb_destination(),
+        .id_rs(),
+        .id_rt(),
+        .ex_rf_enable(id_ex_stage.control_signals_out[13]), 
+        .mem_rf_enable(ex_mem_stage.control_signals_out[13]), 
+        .wb_rf_enable(mem_wb_stage.control_signals_out[13]), 
+        .ex_load_instruction(), 
+        .mem_load_instruction(),
+        .pa_selector(), 
+        .pb_selector(),
+        .load_enable(),
+        .pc_enable(), 
+        .nop_signal()
+    );
 
     // Instantiate Register File /TODO: Check if this is correct
     RegisterFile register_file(
@@ -183,7 +182,7 @@ reg S;
 
     // Instantiate Data Memory /TODO: Check if this is correct
     DataMemory datamem(
-        .A(pc.pc_out[8:0]),
+        .A(ex_mem_stage.alu_result_out[8:0]),
         .DI(register_file.PB),
         .Size(ex_mem_stage.control_signals_out[6:5]), // Data size: 00 (byte), 01 (halfword), 10 (word)
         .R_W(ex_mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
@@ -205,30 +204,37 @@ reg S;
     // Instantiate MUX
     mux_4x1 muxA(
         .I0(register_file.PA),
-        .I1(datamem.DO), //CHANGE THIS
-        .I2(ex_alu.Out),
+        .I1(DataOut_mux.Y),
+        .I2(MemToReg_mux.Y),
         .I3(ex_alu.Out),
-        .S(hazard_forwarding_unit.forwardMX1),
+        .S(HazardForwardingUnit.pa_selector),
         .Y()
     );
 
     // Instantiate MUX
     mux_4x1 muxB(
         .I0(register_file.PA),
-        .I1(datamem.DO), //CHANGE THIS
-        .I2(ex_alu.Out),
+        .I1(DataOut_mux.Y),
+        .I2(MemToReg_mux.Y),
         .I3(ex_alu.Out),
-        .S(hazard_forwarding_unit.forwardMX2),
+        .S(HazardForwardingUnit.pb_selector),
         .Y()
     );
 
-    // Instantiate MUX 2x1 WB
-    mux_2x1 muxWB(
-        .I0(ex_alu.Out),
+    mux_2x1 MemMux(
+        .I0(ex_mem_stage.alu_result_out),
         .I1(datamem.DO), //CHANGE THIS
-        .S(ex_mem_stage.control_signals_out[1]),
+        .S(control_unit.ID_MEM_Enable),
         .Y()
     );
+
+    mux_2x1 MemToReg_mux(
+        .I0(ex_alu.Out),
+        .I1(MemMux.Y),
+        .S(control_unit.ID_MEM_Enable),
+        .Y()
+    );
+
 
 
 
