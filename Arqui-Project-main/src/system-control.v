@@ -5,7 +5,7 @@
 `include "control-unit.v"
 `include "ID_Mux.v"
 `include "instructionMemory.v"
-`include "hazardingforwarding.v"
+`include "hazardforwarding.v"
 `include "registerFile.v"
 `include "dataMemory.v"
 `include "ALU.v"
@@ -204,7 +204,7 @@ reg S;
     // Instantiate MUX
     mux_4x1 muxA(
         .I0(register_file.PA),
-        .I1(DataOut_mux.Y),
+        .I1(MemMux.Y),
         .I2(MemToReg_mux.Y),
         .I3(ex_alu.Out),
         .S(HazardForwardingUnit.pa_selector),
@@ -214,7 +214,7 @@ reg S;
     // Instantiate MUX
     mux_4x1 muxB(
         .I0(register_file.PA),
-        .I1(DataOut_mux.Y),
+        .I1(MemMux.Y),
         .I2(MemToReg_mux.Y),
         .I3(ex_alu.Out),
         .S(HazardForwardingUnit.pb_selector),
