@@ -1,26 +1,26 @@
 
 module PPU_Control_Unit (
     input wire [31:0] instruction,
-    output reg [21:0] control_signals,
-    
-    output wire [2:0] ID_SourceOperand_3bits,
-    output wire [3:0] ID_ALU_OP,
-    output wire ID_Load_Instr,
-    output wire ID_RF_Enable,
-    output wire ID_B_Instr,
-    output wire ID_TA_Instr,
-    output wire [1:0] ID_MEM_Size,
-    output wire ID_MEM_RW,
-    output wire ID_MEM_SE,
-    output wire ID_Enable_HI,
-    output wire ID_Enable_LO,
-    output wire ID_MEM_Enable,
-    output wire Unconditional_Jump,
-    output wire Destination_Register,
-    output wire R31,
-    output wire Conditional_Unconditional_jump
+    output reg [21:0] control_signals
+
 );
 
+    reg [2:0] ID_SourceOperand_3bits;
+    reg [3:0] ID_ALU_OP;
+    reg ID_Load_Instr;
+    reg ID_RF_Enable;
+    reg ID_B_Instr;
+    reg ID_TA_Instr;
+    reg [1:0] ID_MEM_Size;
+    reg ID_MEM_RW;
+    reg ID_MEM_SE;
+    reg ID_Enable_HI;
+    reg ID_Enable_LO;
+    reg ID_MEM_Enable;
+    reg Unconditional_Jump;
+    reg Destination_Register;
+    reg R31;
+    reg Conditional_Unconditional_Jump;
 
 // Opcode values
     parameter R_TYPE1 = 6'b000000;
@@ -113,43 +113,232 @@ parameter ADDI_OP    = 6'b001000,
 parameter J_OP       = 6'b000010,
           JAL_OP     = 6'b000011;
     
-	
-    // Control signals                  //bit 15-17
-    assign  ID_SourceOperand_3bits  = (instruction[31:26] == ADDIU_OP) ? 3'b001 : 3'b000; // source operand 2 handler sign control 3 bits
-   
-    assign ID_ALU_OP     = (instruction[31:26] == ADDIU_OP) ? 4'b0001
-                       : ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) ? 4'b010 : 4'b000; //bit11-14
-
-    assign ID_B_Instr    = (instruction[31:26] == I_TYPE)  ? 1'b1 : 1'b0; //bit10
-
-    assign ID_Load_Instr = (instruction[31:26] == LBU_OP && instruction[15] == 1'b0) ? 1'b1 : 1'b0; //bit9
-
-    assign ID_RF_Enable = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit8 
-
-    assign ID_TA_Instr   = (instruction[31:26] == JAL_OP) ? 1'b1 : 1'b0; //bit7
-
-    assign ID_MEM_Size   = (instruction[31:26] == ADDIU_OP) ? 2'b01  : 2'b00; //bit5-6
-
-    assign ID_MEM_RW     = (instruction[31:26] == SB_OP) ? 1'b1 : 1'b0; //bit4
-
-    assign ID_MEM_SE    = (instruction[31:26] == LBU_OP) ? 1'b1 : 1'b0; //bit3
-
-    assign ID_MEM_Enable  = (instruction[31:26] == SB_OP) ? 1'b1 : 1'b0; //bit2
-
-    assign ID_Enable_HI  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit1
-    
-    assign ID_Enable_LO  = (instruction[31:26] == R_TYPE1) ? 1'b1 : 1'b0; //bit0
-
-    //to do: generate the correct control signals for the rest of the instructions
-    //set to 0 for now
-    assign Unconditional_Jump = 0;
-    assign Destination_Register = 0;
-    assign R31 = 0;
-    assign Conditional_Unconditional_jump = 0;
-   
-
-   
 always @ (instruction) begin
+
+    if (instruction == 32'b0 | instruction == 32'bx) begin
+
+        control_signals <= 22'b0;
+
+        ID_SourceOperand_3bits = 3'b0;
+        ID_ALU_OP = 4'b0;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b0;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+
+        $display("Keyword: NOP");
+
+    end else if (instruction[31:26] == ADDIU_OP) begin
+
+        ID_SourceOperand_3bits = 3'b100;
+        ID_ALU_OP = 4'b0000;
+        ID_Load_Instr = 1'b1;
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+    end else if ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) begin
+        ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b0001;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0; 
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+    end else if (instruction[31:26] == LBU_OP) begin
+        // Handle LBU_OP case
+        ID_SourceOperand_3bits = 3'b100;
+        ID_ALU_OP = 4'b0000; 
+        ID_Load_Instr = 1'b1;
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;  //0 
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b1;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+    end else if (instruction[31:26] == BGTZ_OP) begin //anadir condicional/inco // Handle BGTZ_OP case
+        
+        ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b1010;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b1;
+        ID_TA_Instr = 1'b1;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+    end else if (instruction[31:26] == JAL_OP) begin// Handle JAL_OP case
+        
+        ID_SourceOperand_3bits = 3'b011; //poner 0
+        ID_ALU_OP = 4'b1100; //poner 0
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b1; //bit 21
+        R31 = 1'b1; // bit 20
+        Unconditional_Jump = 1'b1; //bit 19
+        Destination_Register = 1'b1; //bit 18
+    end else if (instruction[31:26] == LUI_OP) begin// Handle LUI_OP case
+        
+        ID_SourceOperand_3bits = 3'b101;
+        ID_ALU_OP = 4'b1011; //puede ser 1100
+        ID_Load_Instr = 1'b0;  //no se
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+    end else if ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == JR_FUNCT)) begin
+         ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b0000;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b1; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b1; //bit 19
+        Destination_Register = 1'b0; //bit 18
+
+        
+    end else if (instruction[31:26] == SB_OP) begin
+        // Handle SB_OP case
+        ID_SourceOperand_3bits = 3'b100;
+        ID_ALU_OP = 4'b0000;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b1;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        R31 = 1'b0; // bit 20
+        Unconditional_Jump = 1'b0; //bit 19
+        Destination_Register = 1'b0; //bit 18
+
+    end else if(instruction[31:26] == BGEZ_RT)begin
+        ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b1001; //checquea si rs que es puerto A es mayor que 0
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b1; //creo
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; // 0 cuando es conditional 1 cuando es unconditional
+        R31 = 1'b0; 
+        Unconditional_Jump = 1'b0; 
+        Destination_Register = 1'b0; 
+    end else if(instruction[31:26] == B_Case)begin
+        ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b0000;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b0;
+        Conditional_Unconditional_Jump = 1'b0; 
+        R31 = 1'b0; 
+        Unconditional_Jump = 1'b0; 
+        Destination_Register = 1'b0;
+    end
+                // control_signals is a signal that represents the control signals for the MIPS processor.
+        // The control signals are packed into a single vector, where each bit represents a specific control signal.
+        // The order of the control signals is as follows:
+        // Bit 0: ID_Enable_LO
+        // Bit 1: ID_Enable_HI
+        // Bit 2: ID_MEM_Enable
+        // Bit 3: ID_MEM_SE
+        // Bit 4: ID_MEM_RW
+        // Bit 5-6: ID_MEM_Size
+        // Bit 7: ID_TA_Instr
+        // Bit 8: ID_RF_Enable
+        // Bit 9: ID_Load_Instr
+        // Bit 10: ID_B_Instr
+        // Bit 11-14: ID_ALU_OP
+        // Bit 15-17: ID_SourceOperand_3bits
+        // Bit 18: Destination_Register
+        // Bit 19: Unconditional_Jump
+        // Bit 20: R31
+        // Bit 21: Conditional_Unconditional_Jump
+    control_signals = {Conditional_Unconditional_Jump, R31, Unconditional_Jump, Destination_Register, ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
+
     case (instruction[31:26])
      R_TYPE1: case(instruction[5:0])
         ADDU_FUNCT: $display("Keyword: ADDU");
@@ -161,7 +350,7 @@ always @ (instruction) begin
         OR_FUNCT: $display("Keyword: OR");
         XOR_FUNCT: $display("Keyword: XOR");
         NOR_FUNCT: $display("Keyword: NOR");
-        SLL_FUNCT: if (instruction[25:0] == 26'b0) $display("Keyword: NOP"); else $display("Keyword: SLL");
+        SLL_FUNCT: $display("Keyword: SLL");
         SLLV_FUNCT: $display("Keyword: SLLV");
         SRA_FUNCT: $display("Keyword: SRA");
         SRAV_FUNCT: $display("Keyword: SRAV");
@@ -243,7 +432,8 @@ always @ (instruction) begin
     default: $display("Keyword: Unknown");
 endcase
 
-    control_signals = {ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
-end
+    end
+
 
 endmodule
+

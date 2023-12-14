@@ -1,0 +1,43 @@
+#! /mingw32/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1391-gd480c4d7d)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\msys64\mingw32\lib\ivl\system.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\va_math.vpi";
+S_016e6ab8 .scope module, "ID_EX_Stage" "ID_EX_Stage" 2 2;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "reset";
+    .port_info 2 /INPUT 22 "control_signals";
+    .port_info 3 /OUTPUT 22 "control_signals_out";
+o015f1fd4 .functor BUFZ 1, C4<z>; HiZ drive
+v016e6bc0_0 .net "clk", 0 0, o015f1fd4;  0 drivers
+o015f1fec .functor BUFZ 22, C4<zzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v016e6c18_0 .net "control_signals", 21 0, o015f1fec;  0 drivers
+v016ed1c0_0 .var "control_signals_out", 21 0;
+o015f201c .functor BUFZ 1, C4<z>; HiZ drive
+v016ed218_0 .net "reset", 0 0, o015f201c;  0 drivers
+E_016e6b90 .event posedge, v016e6bc0_0;
+    .scope S_016e6ab8;
+T_0 ;
+    %wait E_016e6b90;
+    %load/vec4 v016ed218_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 0, 0, 22;
+    %assign/vec4 v016ed1c0_0, 0;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v016e6c18_0;
+    %store/vec4 v016ed1c0_0, 0, 22;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "ID_EX_Stage.v";
