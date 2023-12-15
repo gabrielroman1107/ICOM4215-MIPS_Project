@@ -251,14 +251,14 @@ initial begin
     // $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
     // pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
 
-    $readmemb("precargas/instructions.txt", imem.mem);
+    $readmemb("precargas/phase4.txt", imem.mem);
 end
 
   initial fork
     #3 reset = 1'b0; // Remove the reset
     S = 1'b0; 
     #40 S = 1'b1; // Set the S signal
-    #48 $finish;
+    #56 $finish;
 join
 
 // always @(posedge clk) begin
@@ -281,14 +281,37 @@ join
     // $display("\nInstruction=%b", instruction_wire_out);
     // $display("\nIF:\nPC=%0d nPC=%0d Instruction Reg=%b",  pc.pc_out, npc.npc_out, if_id_stage.instruction_reg);
     $display("\nIF/ID:\nInstruction= %b\nPC=%0d, nPC=%0d", if_id_stage.instruction_reg, pc.pc_out, npc.npc_out);
+
     $display("\nControl Unit Signal Output= %b", control_unit.control_signals);
-    $display("\nID/EX:\nControl Signal= %b",id_ex_stage.control_signals_out);
-    $display("\nID/EX_SourceOperand_3bits= %b, ID/EX_ALU_OP=%b, ID/EX_B_Instr=%b, ID/EX_Load_Instr=%b, ID/EX_RF_Enable=%b,  \nID/EX_TA_Instr=%b, ID/EX_MEM_Size=%b, ID/EX_MEM_RW=%b, ID/EX_MEM_SE=%b, ID/EX_MEM_Enable=%b, ID/EX_Enable_HI=%b, ID/EX_Enable_LO=%b", id_ex_stage.control_signals_out[17:15], id_ex_stage.control_signals_out[14:11], id_ex_stage.control_signals_out[10], id_ex_stage.control_signals_out[9], id_ex_stage.control_signals_out[8], id_ex_stage.control_signals_out[7], id_ex_stage.control_signals_out[6:5], id_ex_stage.control_signals_out[4], id_ex_stage.control_signals_out[3], id_ex_stage.control_signals_out[2], id_ex_stage.control_signals_out[1], id_ex_stage.control_signals_out[0]);
+
+    $display("ID_Enable_LO=%b", control_unit.control_signals[0]);
+    $display("ID_Enable_HI=%b", control_unit.control_signals[1]);
+    $display("ID_MEM_Enable=%b", control_unit.control_signals[2]);
+    $display("ID_MEM_SE=%b", control_unit.control_signals[3]);
+    $display("ID_MEM_RW=%b", control_unit.control_signals[4]);
+    $display("ID_MEM_Size=%b", control_unit.control_signals[6:5]);
+    $display("ID_TA_Instr=%b", control_unit.control_signals[7]);
+    $display("ID_RF_Enable=%b", control_unit.control_signals[8]);
+    $display("ID_Load_Instr=%b", control_unit.control_signals[9]);
+    $display("ID_B_Instr=%b", control_unit.control_signals[10]);
+    $display("ID_ALU_OP=%b", control_unit.control_signals[14:11]);
+    $display("ID_SourceOperand_3bits=%b", control_unit.control_signals[17:15]);
+    $display("Destination_Register=%b", control_unit.control_signals[18]);
+    $display("Unconditional_Jump=%b", control_unit.control_signals[19]);
+    $display("R31=%b", control_unit.control_signals[20]);
+    $display("Conditional_Unconditional_Jump=%b", control_unit.control_signals[21]);
+    
+    $display("\nID/EX:\nControl Signal= %b", id_ex_stage.control_signals_out);
+    $display("\nID/EX_SourceOperand_3bits=%b, ID/EX_ALU_OP=%b, ID/EX_B_Instr=%b, ID/EX_Load_Instr=%b, ID/EX_RF_Enable=%b,  \nID/EX_TA_Instr=%b, ID/EX_MEM_Size=%b, ID/EX_MEM_RW=%b, ID/EX_MEM_SE=%b, ID/EX_MEM_Enable=%b, ID/EX_Enable_HI=%b, ID/EX_Enable_LO=%b", id_ex_stage.control_signals_out[17:15],id_ex_stage.control_signals_out[14:11], id_ex_stage.control_signals_out[10], id_ex_stage.control_signals_out[9], id_ex_stage.control_signals_out[8], id_ex_stage.control_signals_out[7], id_ex_stage.control_signals_out[6:5], id_ex_stage.control_signals_out[4], id_ex_stage.control_signals_out[3], id_ex_stage.control_signals_out[2], id_ex_stage.control_signals_out[1], id_ex_stage.control_signals_out[0]);
+    $display("\nControl Signals:");
+
+    // $display("ID/EX_Enable_LO=%b, ID/EX_Enable_HI=%b, ID/EX_MEM_Enable=%b, ID/EX_MEM_SE=%b, ID/EX", id_ex_stage.control_signals_out[0]);
     
     $display("\nEX/MEM:\nControl Signal=%b", ex_mem_stage.control_signals_out);
     $display("\nEX/MEM_SourceOperand_3bits=%b, EX/MEM_ALU_OP=%b, EX/MEM_B_Instr=%b, EX/MEM_Load_Instr=%b, EX/MEM_RF_Enable=%b,  \nEX/MEM_TA_Instr=%b, EX/MEM_MEM_Size=%b, EX/MEM_MEM_RW=%b, EX/MEM_MEM_SE=%b, EX/MEM_MEM_Enable=%b, EX/MEM_Enable_HI=%b, EX/MEM_Enable_LO=%b", ex_mem_stage.control_signals_out[17:15],ex_mem_stage.control_signals_out[14:11], ex_mem_stage.control_signals_out[10], ex_mem_stage.control_signals_out[9], ex_mem_stage.control_signals_out[8], ex_mem_stage.control_signals_out[7], ex_mem_stage.control_signals_out[6:5], ex_mem_stage.control_signals_out[4], ex_mem_stage.control_signals_out[3], ex_mem_stage.control_signals_out[2], ex_mem_stage.control_signals_out[1], ex_mem_stage.control_signals_out[0]);
     
     $display("\nMEM/WB:\nControl Signal=%b", mem_wb_stage.control_signals_out);
+   
     $display("\nMEM/WB_SourceOperand_3bits=%b, MEM/WB_ALU_OP=%b, MEM/WB_B_Instr=%b, MEM/WB_Load_Instr=%b, MEM/WB_RF_Enable=%b,  \nMEM/WB_TA_Instr=%b, MEM/WB_MEM_Size=%b, MEM/WB_MEM_RW=%b, MEM/WB_MEM_SE=%b, MEM/WB_MEM_Enable=%b, MEM/WB_Enable_HI=%b, MEM/WB_Enable_LO=%b", mem_wb_stage.control_signals_out[17:15],mem_wb_stage.control_signals_out[14:11], mem_wb_stage.control_signals_out[10], mem_wb_stage.control_signals_out[9], mem_wb_stage.control_signals_out[8], mem_wb_stage.control_signals_out[7], mem_wb_stage.control_signals_out[6:5], mem_wb_stage.control_signals_out[4], mem_wb_stage.control_signals_out[3], mem_wb_stage.control_signals_out[2], mem_wb_stage.control_signals_out[1], mem_wb_stage.control_signals_out[0]);
     $display("===================================================================================================================================\n");
     // // Print DataOut

@@ -317,7 +317,9 @@ always @ (instruction) begin
         R31 = 1'b0; 
         Unconditional_Jump = 1'b0; 
         Destination_Register = 1'b0;
-    end
+    end 
+
+    
                 // control_signals is a signal that represents the control signals for the MIPS processor.
         // The control signals are packed into a single vector, where each bit represents a specific control signal.
         // The order of the control signals is as follows:
@@ -337,8 +339,10 @@ always @ (instruction) begin
         // Bit 19: Unconditional_Jump
         // Bit 20: R31
         // Bit 21: Conditional_Unconditional_Jump
-    control_signals = {Conditional_Unconditional_Jump, R31, Unconditional_Jump, Destination_Register, ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
 
+    control_signals = {Conditional_Unconditional_Jump, R31, Unconditional_Jump, Destination_Register, ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
+    
+    
     case (instruction[31:26])
      R_TYPE1: case(instruction[5:0])
         ADDU_FUNCT: $display("Keyword: ADDU");
