@@ -211,12 +211,12 @@ always @ (instruction) begin
         Destination_Register = 1'b0; //bit 18
     end else if (instruction[31:26] == JAL_OP) begin// Handle JAL_OP case
         
-        ID_SourceOperand_3bits = 3'b011; //poner 0
-        ID_ALU_OP = 4'b1100; //poner 0
+        ID_SourceOperand_3bits = 3'b011;
+        ID_ALU_OP = 4'b1100;
         ID_Load_Instr = 1'b0;
         ID_RF_Enable = 1'b1;
         ID_B_Instr = 1'b0;
-        ID_TA_Instr = 1'b0;
+        ID_TA_Instr = 1'b1; //1
         ID_MEM_Size = 2'b00;
         ID_MEM_RW = 1'b0;
         ID_MEM_SE = 1'b0;
@@ -230,8 +230,8 @@ always @ (instruction) begin
     end else if (instruction[31:26] == LUI_OP) begin// Handle LUI_OP case
         
         ID_SourceOperand_3bits = 3'b101;
-        ID_ALU_OP = 4'b1011; //puede ser 1100
-        ID_Load_Instr = 1'b0;  //no se
+        ID_ALU_OP = 4'b1011;
+        ID_Load_Instr = 1'b0;
         ID_RF_Enable = 1'b1;
         ID_B_Instr = 1'b0;
         ID_TA_Instr = 1'b0;
@@ -285,18 +285,18 @@ always @ (instruction) begin
 
     end else if(instruction[31:26] == BGEZ_RT)begin
         ID_SourceOperand_3bits = 3'b000;
-        ID_ALU_OP = 4'b1001; //checquea si rs que es puerto A es mayor que 0
+        ID_ALU_OP = 4'b1001; 
         ID_Load_Instr = 1'b0;
         ID_RF_Enable = 1'b0;
-        ID_B_Instr = 1'b1; //creo
-        ID_TA_Instr = 1'b0;
+        ID_B_Instr = 1'b1;
+        ID_TA_Instr = 1'b1;
         ID_MEM_Size = 2'b00;
         ID_MEM_RW = 1'b0;
         ID_MEM_SE = 1'b0;
         ID_Enable_HI = 1'b0;
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
-        Conditional_Unconditional_Jump = 1'b0; // 0 cuando es conditional 1 cuando es unconditional
+        Conditional_Unconditional_Jump = 1'b0; 
         R31 = 1'b0; 
         Unconditional_Jump = 1'b0; 
         Destination_Register = 1'b0; 
@@ -305,8 +305,8 @@ always @ (instruction) begin
         ID_ALU_OP = 4'b0000;
         ID_Load_Instr = 1'b0;
         ID_RF_Enable = 1'b0;
-        ID_B_Instr = 1'b0;
-        ID_TA_Instr = 1'b0;
+        ID_B_Instr = 1'b1;
+        ID_TA_Instr = 1'b1;
         ID_MEM_Size = 2'b00;
         ID_MEM_RW = 1'b0;
         ID_MEM_SE = 1'b0;
@@ -350,7 +350,7 @@ always @ (instruction) begin
         OR_FUNCT: $display("Keyword: OR");
         XOR_FUNCT: $display("Keyword: XOR");
         NOR_FUNCT: $display("Keyword: NOR");
-        SLL_FUNCT: $display("Keyword: SLL");
+        //SLL_FUNCT: $display("Keyword: SLL");
         SLLV_FUNCT: $display("Keyword: SLLV");
         SRA_FUNCT: $display("Keyword: SRA");
         SRAV_FUNCT: $display("Keyword: SRAV");

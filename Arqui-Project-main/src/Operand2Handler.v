@@ -2,7 +2,7 @@ module Operand2_Handler(
     input [31:0] PB,
     input [31:0] HI,
     input [31:0] LO,
-    input [31:0] PC,
+    input [31:0] PC, //was 31
     input [15:0] imm16,
     input [2:0] S,
     output reg [31:0] N

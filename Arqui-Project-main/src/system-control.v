@@ -13,7 +13,7 @@
 // `include "condition-handler.v"
 `include "PC-Register.v"
 `include "NPC-Register.v"
-`include "Adder+4.v"
+`include "Adders.v"
 
 
 module system_control (
@@ -56,7 +56,6 @@ reg S;
         .adder_in(npc.npc_out),
         .adder_out()
     );
-
 
     //Instantiate IF_Stage
     IF_ID_Stage if_id_stage(
@@ -151,15 +150,6 @@ reg S;
         .PA(),
         .PB()
     );
-
-    // Register reg1 (.Q(register_file.I1),  .D(PW), .clk(clk), .Ld(E[1]));
-    // Register reg3 (.Q(register_file.I3),  .D(PW), .clk(clk), .Ld(E[3]));
-    // Register reg4 (.Q(register_file.I4),  .D(PW), .clk(clk), .Ld(E[4]));
-    // Register reg5 (.Q(register_file.I5),  .D(PW), .clk(clk), .Ld(E[5]));
-    // Register reg8 (.Q(register_file.I8),  .D(PW), .clk(clk), .Ld(E[8]));
-    // Register reg10 (.Q(register_file.I10),  .D(PW), .clk(clk), .Ld(E[10]));
-    // Register reg11 (.Q(register_file.I11),  .D(PW), .clk(clk), .Ld(E[11]));
-    // Register reg12 (.Q(register_file.I12),  .D(PW), .clk(clk), .Ld(E[12]));
 
 
     // Instantiate Data Memory /TODO: Check if this is correct
