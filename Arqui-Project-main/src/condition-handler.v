@@ -1,6 +1,7 @@
 
 module Condition_Handler (
     output reg Condition_Handler_Out,
+    input wire branch_instruction,
     input wire [31:0] instruction,
     input wire Z,
     input wire N
@@ -71,7 +72,7 @@ localparam [4:0]
 
 
 always @* begin
-    
+    if(branch_instruction)begin
     case (instruction[31:26])
         OPCODE_BNE: begin //not equal
             if(Z == 0) Condition_Handler_Out <= 1'b1;
@@ -113,8 +114,9 @@ always @* begin
               end
             endcase
         end
+        
     endcase
-
+    end else Condition_Handler_Out = 1'b0;
 end
 
 endmodule

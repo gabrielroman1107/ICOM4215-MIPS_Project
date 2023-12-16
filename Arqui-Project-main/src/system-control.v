@@ -25,6 +25,7 @@ module system_control (
 reg clk;
 reg reset;
 reg S;
+
     wire [31:0] npc_wire_out;
     wire [31:0] pc_wire_in;
     wire [31:0] pc_wire_out;
@@ -47,6 +48,7 @@ reg S;
 
     wire [31:0] E;
 
+    integer i, finished, pc_count;
     
 
  // Instantiate NPC Register
@@ -156,6 +158,7 @@ reg S;
         .wb_destination(mem_wb_stage.destination_out),
         .pa_selector(), 
         .pb_selector(),
+        .hazard_type(),
         .load_enable(),
         .pc_enable(), 
         .nop_signal()
@@ -311,6 +314,7 @@ reg S;
     // Instantiate Condition Handler
     Condition_Handler condition_handler(                                    //DONE
         .instruction(if_id_stage.instruction_reg),
+        .branch_instruction(id_ex_stage.control_signals_out[10]),
         .Z(ex_alu.Z),
         .N(ex_alu.N),
         .Condition_Handler_Out()
@@ -349,6 +353,11 @@ Register R29 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[29]));
 Register R30 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[30]));
 Register R31 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[31]));
 
+BinaryDecoder decoder(
+    .E(E),
+    .C(register_file.RW),
+    .RF(control_unit.control_signals[8])
+); 
 
 
 mux_32_Monitor mux_32_1_Monitor(
@@ -368,33 +377,44 @@ mux_32_Monitor mux_32_1_Monitor(
 initial begin
     clk = 1'b0; // Initialize the clock
     reset = 1'b1; // Reset the circuit
+    finished = 1'b0;
+
 
     forever #2 clk = ~clk;
+
 end
 
 initial begin
-
-    // $monitor("PC=%0d, Data Memory Address=%0d, r1=%0d, r3=%0d, r4=%0d, r5=%0d, r8=%0d, r10=%0d, r11=%0d, r12=%0d",
-    // pc.pc_out, datamem.A, reg1, reg3, reg4, reg5, reg8, reg10, reg11, reg12);
-
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
+    
+    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR1: %0d, R3: %0d, R4: %0d, R5: %0d, R8: %0d, R10: %0d, R11: %0d, R12: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d", 
+    pc.pc_out, datamem.A, mux_32_1_Monitor.Y1, mux_32_1_Monitor.Y3, mux_32_1_Monitor.Y4, mux_32_1_Monitor.Y5, mux_32_1_Monitor.Y8, 
+    mux_32_1_Monitor.Y10, mux_32_1_Monitor.Y11, mux_32_1_Monitor.Y12, mem_wb_stage.mem_wb_out, datamem.DO);
+
 end
 
-  initial fork
+always @(HazardForwardingUnit.hazard_type) begin
+    case (HazardForwardingUnit.hazard_type)
+    2'b01: $display("Load-Use Hazard");
+    2'b10: $display("Read-After-Write Hazard (PA)");
+    2'b11: $display("Read-After-Write Hazard (PB)");
+    default: $display("No Hazard");
+endcase
+    
+end
+     
+
+initial fork
     #3 reset = 1'b0; // Remove the reset
-    S = 1'b0; 
-   // #40 S = 1'b1; // Set the S signal
-    #100 $finish;
+    S = 1'b0;    
+    #100 $display("\nDataMemory contents at Address 52: %b\n\n", datamem.mem[52]);
+   #100 $finish;
 join
 
-initial begin 
-		$monitor("\n\nPC: %d || Address: %d || R5: %d || R6: %d || R16: %d || R17: %d || R18: %d || WB Out: %d \
-			\nData Memory Out: %d \ ", 
-            pc.pc_out, if_id_stage.instruction_reg[20:16], 
-            mux_32_1_Monitor.Y5, mux_32_1_Monitor.Y6, mux_32_1_Monitor.Y16, mux_32_1_Monitor.Y17, mux_32_1_Monitor.Y18, 
-            mem_wb_stage.mem_wb_out, datamem.DO);
-end
+
+
+
 
 
 // always @(posedge clk) begin
@@ -452,12 +472,8 @@ end
 //     $display("\nMEM/WB_SourceOperand_3bits=%b, MEM/WB_ALU_OP=%b, MEM/WB_B_Instr=%b, MEM/WB_Load_Instr=%b, MEM/WB_RF_Enable=%b,  \nMEM/WB_TA_Instr=%b, MEM/WB_MEM_Size=%b, MEM/WB_MEM_RW=%b, MEM/WB_MEM_SE=%b, MEM/WB_MEM_Enable=%b, MEM/WB_Enable_HI=%b, MEM/WB_Enable_LO=%b", mem_wb_stage.control_signals_out[17:15],mem_wb_stage.control_signals_out[14:11], mem_wb_stage.control_signals_out[10], mem_wb_stage.control_signals_out[9], mem_wb_stage.control_signals_out[8], mem_wb_stage.control_signals_out[7], mem_wb_stage.control_signals_out[6:5], mem_wb_stage.control_signals_out[4], mem_wb_stage.control_signals_out[3], mem_wb_stage.control_signals_out[2], mem_wb_stage.control_signals_out[1], mem_wb_stage.control_signals_out[0]);
 //     $display("===================================================================================================================================\n");
 //     // // Print DataOut
-//     // $display("\nDataOut=%b", DataOut);
+//     // $display("\nDataOut=%b", datamem.DO);
 
-//     // Print control signals of EX, MEM, and WB stages
-//     // $display("\nEX: %b MEM: %b WB: %b", dut.alu_op_reg, dut.mem_enable_reg, dut.rf_enable_reg);
-  
-//   // 4 displays total: keyword, Pc, Npc,  control signal(desglosado) from ID to EX, EX to MEM, MEM to WB
 
 //   end
 
