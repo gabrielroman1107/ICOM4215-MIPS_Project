@@ -1,165 +1,120 @@
 
-// module condition_handler (
-// input wire Z,
-// input wire N,
-// input wire [5:0] opcode,
-// input wire [4:0] rs,
-// input wire [4:0] rt,
-// input ID_branch_instr,
-// output reg branch_out
-// );
+module Condition_Handler (
+    output reg Condition_Handler_Out,
+    input wire [31:0] instruction,
+    input wire Z,
+    input wire N
+); 
 
-//         always @(*) begin
-//                 // Condition handling logic
-//                 case (opcode)
-//                 6'b000000: // BEQ
-//                     branch_out <= (Z == 1);
-//                 6'b000001: // BNE
-//                     branch_out <= (Z == 0);
-//                 6'b000010: // BLT
-//                     branch_out <= (N == 1);
-//                 6'b000011: // BGE
-//                     branch_out <= (N == 0);
-//                 default:
-//                     branch_out <= 0; // Default case
-//             endcase
-//         end
+// Define opcodes for the instructions
+localparam [5:0] 
+    OPCODE_RTYPE = 6'b000000,
+    OPCODE_SPECIAL = 6'b011100, // For CLO and CLZ
+    OPCODE_J    = 6'b000010,
+    OPCODE_JAL  = 6'b000011,
+    OPCODE_ADDI  = 6'b001000,
+    OPCODE_ADDIU = 6'b001001,
+    OPCODE_SLTI  = 6'b001010,
+    OPCODE_SLTIU = 6'b001011,
+    OPCODE_ANDI  = 6'b001100,
+    OPCODE_ORI   = 6'b001101,
+    OPCODE_XORI  = 6'b001110,
+    OPCODE_LUI   = 6'b001111,
+    OPCODE_LB    = 6'b100000,
+    OPCODE_LH    = 6'b100001,
+    OPCODE_LW    = 6'b100011,
+    OPCODE_LBU   = 6'b100100,
+    OPCODE_LHU   = 6'b100101,
+    OPCODE_SB    = 6'b101000,
+    OPCODE_SH    = 6'b101001,
+    OPCODE_SW    = 6'b101011,
+    OPCODE_BEQ   = 6'b000100,
+    OPCODE_BNE   = 6'b000101,
+    OPCODE_BLEZ  = 6'b000110,
+    OPCODE_BGTZ  = 6'b000111,
+    OPCODE_REGIMM = 6'b000001; // Opcode for BLTZ, BGEZ, BLTZAL, BGEZAL, and BAL
 
-// endmodule
+// Define function codes for R-type instructions
+localparam [5:0]
+    FUNC_ADD  = 6'b100000,
+    FUNC_ADDU = 6'b100001,
+    FUNC_SUB  = 6'b100010,
+    FUNC_SUBU = 6'b100011,
+    FUNC_JR   = 6'b001000,
+    FUNC_JALR = 6'b001001,
+    FUNC_MFHI = 6'b010000,
+    FUNC_MFLO = 6'b010010,
+    FUNC_MOVN = 6'b001011,
+    FUNC_MOVZ = 6'b001010,
+    FUNC_MTHI = 6'b010001,
+    FUNC_MTLO = 6'b010011,
+    FUNC_SLT  = 6'b101010,
+    FUNC_SLTU = 6'b101011,
+    FUNC_AND  = 6'b100100,
+    FUNC_OR   = 6'b100101,
+    FUNC_XOR  = 6'b100110,
+    FUNC_NOR  = 6'b100111,
+    FUNC_SLL  = 6'b000000,
+    FUNC_SLLV = 6'b000100,
+    FUNC_SRA  = 6'b000011,
+    FUNC_SRAV = 6'b000111,
+    FUNC_SRL  = 6'b000010,
+    FUNC_SRLV = 6'b000110;
+
+// Define 'rt' field for special REGIMM instructions
+localparam [4:0]
+    RT_BLTZ   = 5'b00000,
+    RT_BGEZ   = 5'b00001,
+    RT_BLTZAL = 5'b10000,
+    RT_BGEZAL = 5'b10001,
+    RT_BAL    = 5'b10001; // Same as BGEZAL
 
 
-module MIPS_Condition_Handler (
-    input wire [5:0] opcode,
-    input wire [4:0] rs_value,
-    input wire [4:0] rt_value,
-    input wire [15:0] imm16,
-    input wire [25:0] address_26,
-    input wire [31:0] pc,
-    input wire control_unit_B_Instr,
-    output wire branch_target_pc,
-    output wire branch_taken
-  );
-
- 
-
-  parameter I_TYPE = 6'b000001,
-            B_BEQ_OP = 6'b000100,
-            BAL_BGEZALOP = 6'b000001,
-            BGTZ_OP    = 6'b000111,
-            BLEZ_OP    = 6'b000110,
-            BNE_OP     = 6'b000101,
-            J        = 6'b000010,
-            JAL      = 6'b000011,
-            JALR_FUNCT = 6'b001001,
-            JR_FUNCT = 6'b001000;
-
-  parameter BGEZ_RT    = 5'b00001,
-          BGEZAL_RT  = 5'b10001,
-          BLTZ_RT    = 5'b00000,
-          BLTZAL_RT  = 5'b10000,
-          BAL_RT     = 5'b10001,
-          TEQI_RT    = 5'b01100,
-          TGEI_RT    = 5'b01000,
-          TGEIU_RT   = 5'b01001,
-          TLTI_RT    = 5'b01010,
-          TLTIU_RT   = 5'b01011,
-          TNEI_RT    = 5'b01110;
-  
-    // Default values
-    wire branch_target_pc_wire = 0; // Default value for the branch target PC
-    wire branch_taken_wire = 0; // Default value for branch taken signal
-
-    //J JAL JALR JR
-    reg address_26 = {rs_value, rt_value, imm16};
-  
-    // Check conditions for each branch instruction
-    always @* begin
-    if(control_unit_B_Instr == 1) begin
-      case ({opcode})
-        // B or BEQ
-        B_BEQ_OP: begin
-          if (rs_value == rt_value) begin //BEQ
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end else begin //B
-            branch_target_pc = pc + 4; // ASK
-            branch_taken = 0;
-          end
+always @* begin
+    
+    case (instruction[31:26])
+        OPCODE_BNE: begin //not equal
+            if(Z == 0) Condition_Handler_Out <= 1'b1;
+            else Condition_Handler_Out <= 1'b0;
         end
 
-        // BAL or BGEZAL
-        BAL_BGEZALOP: begin
-            if (rs_value >= 0) begin //BGEZAL
-                //register 31 = pc + 8
-                branch_target_pc = pc + 4 + (imm16 << 2);
-                branch_taken = 1;
-            end else begin //BAL
-                //register 31 = pc + 8
-                branch_target_pc = pc + 4 + (imm16 << 2);
-                branch_taken = 1;
+        OPCODE_BEQ: begin //equal
+            if(Z == 1) Condition_Handler_Out <= 1'b1;
+            else Condition_Handler_Out <= 1'b0;
+        end
+        OPCODE_BGTZ: begin //greater than zero
+            if(instruction[20:16] == 5'b00000) begin
+                if((Z == 0) && (N == 0)) Condition_Handler_Out <= 1'b1;
+                else Condition_Handler_Out <= 1'b0;
             end
-        end
-        // BNE
-        BNE_OP: begin
-          if (rs_value != rt_value) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-        // BGTZ
-        BGTZ_OP: begin
-          if (rs_value > 0) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-        // BLEZ
-        BLEZ_OP: begin
-          if (rs_value <= 0) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-        // BLTZ is with RT SO GOTTA CHECK OPCODE AND RT
-        BLTZ_RT: begin
-          if (rs_value < 0) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-        // BGEZ is with RT SO GOTTA CHECK OPCODE AND RT
-        BGEZ_RT: begin
-          if (rs_value >= 0) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-        
-        // BLTZAL is with RT SO GOTTA CHECK OPCODE AND RT
-        BLTZAL_RT: begin
-          if (rs_value < 0) begin
-            branch_target_pc = pc + 4 + (imm16 << 2);
-            branch_taken = 1;
-          end
-        end
-
-
-
-        // default: begin
-        //   // Default case, no branch taken
-        //   branch_target_pc = pc + 4;
-        //   branch_taken = 0;
-        // end
-      endcase
-      if (opcode == J) begin
-        branch_target_pc = {pc[31:28], 4*}; // no need to caculate the address just need to know if conditional or unconditional
-        //so mux can calculate the rest
-
         end 
-    end else begin
-            branch_target_pc = pc + 4;
-            branch_taken = 0;
+        OPCODE_BLEZ: begin //lesser or equal than zero
+            if(instruction[20:16] == 5'b00000) begin
+                if((Z == 1) || (N == 1)) Condition_Handler_Out <= 1'b1;
+                else Condition_Handler_Out <= 1'b0;
+            end
+        end // acomodar para chequiar rt con BGTZ y BLEZ
+        OPCODE_REGIMM: begin
+            case (instruction[20:16])
+              RT_BAL: begin //BAL (BGEZAL) //branch and link
+                    Condition_Handler_Out <= 1'b1;
+              end
+              RT_BGEZ: begin //greater or equal than zero
+                    if((Z == 1) || (N == 0)) Condition_Handler_Out <= 1'b1;
+                    else Condition_Handler_Out <= 1'b0;
+              end
+              RT_BLTZ: begin //lesser than zero
+                    if((Z == 0) && (N == 1)) Condition_Handler_Out <= 1'b1;
+                    else Condition_Handler_Out <= 1'b0;
+              end
+              RT_BLTZAL: begin //lesser than zero and link
+                    if(N == 1) Condition_Handler_Out <= 1'b1;
+                    else Condition_Handler_Out <= 1'b0;
+              end
+            endcase
         end
+    endcase
+
 end
-  
-  endmodule
+
+endmodule

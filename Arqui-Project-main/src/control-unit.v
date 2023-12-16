@@ -1,7 +1,7 @@
 
 module PPU_Control_Unit (
     input wire [31:0] instruction,
-    output reg [21:0] control_signals
+    output reg [23:0] control_signals
 
 );
 
@@ -18,9 +18,10 @@ module PPU_Control_Unit (
     reg ID_Enable_LO;
     reg ID_MEM_Enable;
     reg Unconditional_Jump;
-    reg Destination_Register;
-    reg R31;
-    reg Conditional_Unconditional_Jump;
+    reg [1:0] Destination_Register; // 00 do nothing, 01 writes in rd, 10 writes in rt, 11 writes in r31
+    reg Conditional_Unconditional_Jump;        
+    reg Mux_Rs_Addr; 
+    reg Addr_MUX; 
 
 // Opcode values
     parameter R_TYPE1 = 6'b000000;
@@ -132,9 +133,10 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b00; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
 
         $display("Keyword: NOP");
 
@@ -153,9 +155,11 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b10; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
     end else if ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == SUBU_FUNCT)) begin
         ID_SourceOperand_3bits = 3'b000;
         ID_ALU_OP = 4'b0001;
@@ -170,9 +174,11 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b01; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
     end else if (instruction[31:26] == LBU_OP) begin
         // Handle LBU_OP case
         ID_SourceOperand_3bits = 3'b100;
@@ -181,16 +187,19 @@ always @ (instruction) begin
         ID_RF_Enable = 1'b1;
         ID_B_Instr = 1'b0;
         ID_TA_Instr = 1'b0;
-        ID_MEM_Size = 2'b00;
+        ID_MEM_Size = 2'b01;
         ID_MEM_RW = 1'b0;
-        ID_MEM_SE = 1'b0;  //0 
+        ID_MEM_SE = 1'b1;  //0 
         ID_Enable_HI = 1'b0;
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b1;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b10; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
+
     end else if (instruction[31:26] == BGTZ_OP) begin //anadir condicional/inco // Handle BGTZ_OP case
         
         ID_SourceOperand_3bits = 3'b000;
@@ -206,9 +215,12 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
         Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Destination_Register = 2'b0; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
+
     end else if (instruction[31:26] == JAL_OP) begin// Handle JAL_OP case
         
         ID_SourceOperand_3bits = 3'b011;
@@ -216,7 +228,7 @@ always @ (instruction) begin
         ID_Load_Instr = 1'b0;
         ID_RF_Enable = 1'b1;
         ID_B_Instr = 1'b0;
-        ID_TA_Instr = 1'b1; //1
+        ID_TA_Instr = 1'b0; //1
         ID_MEM_Size = 2'b00;
         ID_MEM_RW = 1'b0;
         ID_MEM_SE = 1'b0;
@@ -224,9 +236,12 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b1; //bit 21
-        R31 = 1'b1; // bit 20
-        Unconditional_Jump = 1'b1; //bit 19
-        Destination_Register = 1'b1; //bit 18
+        Unconditional_Jump = 1'b1; //bit 20
+        Destination_Register = 2'b11; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
+
     end else if (instruction[31:26] == LUI_OP) begin// Handle LUI_OP case
         
         ID_SourceOperand_3bits = 3'b101;
@@ -242,9 +257,11 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b10; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
     end else if ((instruction[31:26] == R_TYPE1) && (instruction[5:0] == JR_FUNCT)) begin
          ID_SourceOperand_3bits = 3'b000;
         ID_ALU_OP = 4'b0000;
@@ -259,10 +276,11 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b1; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b1; //bit 19
-        Destination_Register = 1'b0; //bit 18
-
+        Unconditional_Jump = 1'b1; //bit 20
+        Destination_Register = 2'b0; //bit 18-19
+        Mux_Rs_Addr = 1'b1; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+// 00 do nothing, 01 writes in rd, 10 writes in rt, 11 writes in r31
         
     end else if (instruction[31:26] == SB_OP) begin
         // Handle SB_OP case
@@ -272,16 +290,19 @@ always @ (instruction) begin
         ID_RF_Enable = 1'b0;
         ID_B_Instr = 1'b0;
         ID_TA_Instr = 1'b0;
-        ID_MEM_Size = 2'b00;
+        ID_MEM_Size = 2'b01;
         ID_MEM_RW = 1'b0;
         ID_MEM_SE = 1'b0;
         ID_Enable_HI = 1'b0;
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b1;
         Conditional_Unconditional_Jump = 1'b0; //bit 21
-        R31 = 1'b0; // bit 20
-        Unconditional_Jump = 1'b0; //bit 19
-        Destination_Register = 1'b0; //bit 18
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b10; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+// 00 do nothing, 01 writes in rd, 10 writes in rt, 11 writes in r31
+
 
     end else if(instruction[31:26] == BGEZ_RT)begin
         ID_SourceOperand_3bits = 3'b000;
@@ -297,9 +318,12 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; 
-        R31 = 1'b0; 
-        Unconditional_Jump = 1'b0; 
-        Destination_Register = 1'b0; 
+        Unconditional_Jump = 1'b0; // bit 20
+        Destination_Register = 2'b0; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
+
     end else if(instruction[31:26] == B_Case)begin
         ID_SourceOperand_3bits = 3'b000;
         ID_ALU_OP = 4'b0000;
@@ -314,9 +338,11 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b0; 
-        R31 = 1'b0; 
-        Unconditional_Jump = 1'b0; 
-        Destination_Register = 1'b0;
+        Unconditional_Jump = 1'b0; // bit 20
+        Destination_Register = 2'b0; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
     end 
 
     
@@ -335,12 +361,13 @@ always @ (instruction) begin
         // Bit 10: ID_B_Instr
         // Bit 11-14: ID_ALU_OP
         // Bit 15-17: ID_SourceOperand_3bits
-        // Bit 18: Destination_Register
-        // Bit 19: Unconditional_Jump
-        // Bit 20: R31
+        // Bit 18-19: Destination_Register
+        // Bit 20: Unconditional_Jump
         // Bit 21: Conditional_Unconditional_Jump
+        // Bit 22: Mux_Rs_Addr
+        // Bit 23: Addr_MUX
 
-    control_signals = {Conditional_Unconditional_Jump, R31, Unconditional_Jump, Destination_Register, ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
+    control_signals = {Addr_MUX, Mux_Rs_Addr, Conditional_Unconditional_Jump, Unconditional_Jump, Destination_Register, ID_SourceOperand_3bits, ID_ALU_OP, ID_B_Instr, ID_Load_Instr, ID_RF_Enable, ID_TA_Instr, ID_MEM_Size, ID_MEM_RW, ID_MEM_SE, ID_MEM_Enable, ID_Enable_HI, ID_Enable_LO};
     
     
     case (instruction[31:26])

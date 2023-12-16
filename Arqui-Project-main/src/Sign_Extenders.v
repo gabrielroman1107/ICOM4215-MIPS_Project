@@ -1,5 +1,5 @@
 module SE_4addr26( 
-    output reg [27:0] extended,
+    output reg [31:0] extended,
     input [25:0] extend
     );
 

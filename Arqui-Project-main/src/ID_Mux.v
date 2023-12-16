@@ -1,7 +1,7 @@
 module ID_Mux(
-    input wire [21:0] input_0,
+    input wire [23:0] input_0,
     input S,
-    output reg [21:0] mux_control_signals
+    output reg [23:0] mux_control_signals
     // output reg ID_branch_instr
 );
 

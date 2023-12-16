@@ -97,3 +97,100 @@ always @ (*) begin
 	endcase
 	end
 endmodule
+
+module WB_Destination (
+	input [4:0] rd,
+	input [4:0] rt,
+	input r31,
+	output reg [4:0] destination
+);
+
+always @ (*) begin
+	if (r31) begin
+		destination = 5'b11111;
+	end
+	else if (rd == 5'b00000) begin
+		destination = rt;
+	end
+	else begin
+		destination = rd;
+	end
+end
+
+endmodule
+
+module HI_MUX (
+	input HI_Enable,
+	input [31:0] HI,
+	output reg [31:0] Y
+);
+
+always @ (*) begin
+	if (HI_Enable) begin
+		Y = HI;
+	end
+	else begin
+		Y = 32'b0;
+	end
+end
+
+endmodule
+
+module LO_MUX (
+	input LO_Enable,
+	input [31:0] LO,
+	output reg [31:0] Y
+);
+
+always @ (*) begin
+	if (LO_Enable) begin
+		Y = LO;
+	end
+	else begin
+		Y = 32'b0;
+	end
+end
+
+endmodule
+
+module PC_Mux(
+    input [31:0] nPC,
+    input [31:0] TA,
+    input [31:0] jump_target,
+    input [1:0] select,
+    output reg [31:0] Out
+);
+    always @(*) begin
+        case (select)
+            2'b00: Out = nPC;
+            2'b01: Out = TA;
+            2'b10: Out = jump_target;
+            default: Out = 32'b0;
+        endcase
+    end
+endmodule
+
+
+
+module mux_32_Monitor (
+    output reg [31:0] PA, PB,
+    output reg [31:0] Y0, Y1, Y2, Y3, Y4, Y5, Y6, Y7, Y8, Y9,
+    output reg [31:0] Y10, Y11, Y12, Y13, Y14, Y15, Y16, Y17, Y18, Y19,
+    output reg [31:0] Y20, Y21, Y22, Y23, Y24, Y25, Y26, Y27, Y28, Y29,
+    output reg [31:0] Y30, Y31,
+    input [4:0] rs, rt,
+    input [31:0] R0, R1, R2, R3, R4, R5, R6, R7, R8, R9,
+    input [31:0] R10, R11, R12, R13, R14, R15, R16, R17, R18, R19,
+    input [31:0] R20, R21, R22, R23, R24, R25, R26, R27, R28, R29,
+    input [31:0] R30, R31
+);
+    
+always @ (*)
+begin
+    PA = rs; Y0 = R0; Y1 = R1; Y2 = R2; Y3 = R3; Y4 = R4; Y5 = R5; Y6 = R6; Y7 = R7; Y8 = R8; Y9 = R9;
+    Y10 = R10; Y11 = R11; Y12 = R12; Y13 = R13; Y14 = R14; Y15 = R15; Y16 = R16; Y17 = R17; Y18 = R18; Y19 = R19;
+    Y20 = R20; Y21 = R21; Y22 = R22; Y23 = R23; Y24 = R24; Y25 = R25; Y26 = R26; Y27 = R27; Y28 = R28; Y29 = R29;
+    Y30 = R30; Y31 = R31; PB = rt;
+end
+
+endmodule
