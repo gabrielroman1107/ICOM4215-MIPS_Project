@@ -388,9 +388,8 @@ initial begin
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
     
-    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR1: %0d, R3: %0d, R4: %0d, R5: %0d, R8: %0d, R10: %0d, R11: %0d, R12: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d", 
-    pc.pc_out, datamem.A, mux_32_1_Monitor.Y1, mux_32_1_Monitor.Y3, mux_32_1_Monitor.Y4, mux_32_1_Monitor.Y5, mux_32_1_Monitor.Y8, 
-    mux_32_1_Monitor.Y10, mux_32_1_Monitor.Y11, mux_32_1_Monitor.Y12, mem_wb_stage.mem_wb_out, datamem.DO);
+    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d", 
+    pc.pc_out, datamem.A, mux_32_1_Monitor.Y5, mux_32_1_Monitor.Y6, mux_32_1_Monitor.Y16, mux_32_1_Monitor.Y17, mux_32_1_Monitor.Y18, mem_wb_stage.mem_wb_out, datamem.DO);
 
 end
 
