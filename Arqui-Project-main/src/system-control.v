@@ -104,12 +104,13 @@ reg S;
         .destination(wb_destination_mux.destination),
         .PA(muxA.Y),
         .PB(muxB.Y),
-        .PC(pc.pc_out),
+        .PC(if_id_stage.PC),
         .RS_Address(RS_address_mux.Y),
         .destination_out(),
         .RS_Address_out(),
         .PA_out(),
         .PB_out(),
+        .PC_out(),
         .control_signals_out()
     );
 
@@ -388,8 +389,15 @@ initial begin
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
     
-    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d", 
-    pc.pc_out, datamem.A, mux_32_1_Monitor.Y5, mux_32_1_Monitor.Y6, mux_32_1_Monitor.Y16, mux_32_1_Monitor.Y17, mux_32_1_Monitor.Y18, mem_wb_stage.mem_wb_out, datamem.DO);
+    // $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
+    // pc.pc_out, ex_mem_stage.alu_result_out, R5.Q, R6.Q, R16.Q, R17.Q, R18.Q, mem_wb_stage.mem_wb_out, datamem.DO);
+
+    $monitor("\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n\n Output PA Mux:%b\n ============================================================ \
+    \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b\n============================================================",
+     muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.Y,id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N );
+
+    //  $monitor("\n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b\n =======================",
+    //  id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N);
 
 end
 

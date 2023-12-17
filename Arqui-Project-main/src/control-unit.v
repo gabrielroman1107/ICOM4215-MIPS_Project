@@ -179,7 +179,7 @@ always @ (instruction) begin
         Mux_Rs_Addr = 1'b0; //bit 22
         Addr_MUX = 1'b0; //bit 23
 
-    end else if (instruction[31:26] == LBU_OP) begin
+    end else if (instruction[31:26] == LBU_OP) begin 
         // Handle LBU_OP case
         ID_SourceOperand_3bits = 3'b100;
         ID_ALU_OP = 4'b0000; 
@@ -200,7 +200,7 @@ always @ (instruction) begin
         Addr_MUX = 1'b0; //bit 23
 
 
-    end else if (instruction[31:26] == BGTZ_OP) begin //anadir condicional/inco // Handle BGTZ_OP case
+    end else if (instruction[31:26] == BGTZ_OP) begin // Handle BGTZ_OP case
         
         ID_SourceOperand_3bits = 3'b000;
         ID_ALU_OP = 4'b1010;
@@ -217,7 +217,7 @@ always @ (instruction) begin
         Conditional_Unconditional_Jump = 1'b0; //bit 21
         Unconditional_Jump = 1'b0; //bit 19
         Destination_Register = 2'b0; //bit 18-19
-        Mux_Rs_Addr = 1'b0; //bit 22
+        Mux_Rs_Addr = 1'b1; //bit 22
         Addr_MUX = 1'b0; //bit 23
 
 

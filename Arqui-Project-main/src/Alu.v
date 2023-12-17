@@ -38,7 +38,10 @@ always @(*) begin // @(*) means "always when any of the inputs change"
             Out = $signed(A) >>> B;
         // If (A < B) then Out = 1, else Out = 0
         4'b1001:
-            Out = (A < B) ? 32'b1 : 32'b0; // 32'b1 is the same as 32'h1
+            if (A < B)
+                Out = 1;
+            else
+                Out = 0;
         // Pass A
         4'b1010:
             Out = A;
