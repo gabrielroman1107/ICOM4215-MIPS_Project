@@ -362,8 +362,8 @@ always @ (instruction) begin
         // Bit 11-14: ID_ALU_OP
         // Bit 15-17: ID_SourceOperand_3bits
         // Bit 18-19: Destination_Register
-        // Bit 20: Unconditional_Jump
-        // Bit 21: Conditional_Unconditional_Jump
+        // Bit 20: Unconditional_Jump actually just for jump or not
+        // Bit 21: Conditional_Unconditional_Jump actually just for conditional jump or branch
         // Bit 22: Mux_Rs_Addr
         // Bit 23: Addr_MUX
 
