@@ -30,8 +30,10 @@ reg S;
     wire [31:0] pc_wire_in;
     wire [31:0] pc_wire_out;
     wire [31:0] adder_wire_out;
+    
+
     reg [8:0] address;
-    wire [31:0] DataOut;
+    wire [31:0] DataMEMOut;
     wire [16:0] control_signals_wire;
     wire [16:0] mux_out_wire;
     wire [31:0] instruction_wire_out;
@@ -56,20 +58,20 @@ reg S;
         .clk(clk),
         .reset(reset),
         .npc_in(adder.adder_out),
-        .npc_out()
+        .npc_out(npc_wire_out)
     );
 
     // Instantiate PC
     PC_Register pc (       //load_enable set to on for simplicity                                       //DONE
         .clk(clk),
         .reset(reset),
-        .pc_in(npc.npc_out),
-        .pc_out()
+        .pc_in(npc_wire_out),
+        .pc_out(pc_wire_out)
     );
 
     // Instantiate Adder+4 
     Adder_4 adder (                                              //DONE
-        .adder_in(npc.npc_out),
+        .adder_in(npc_wire_out),
         .adder_out()
     );
 
@@ -92,7 +94,7 @@ reg S;
             // Instantiate Mux
     ID_Mux mux(                                                      //DONE
         .input_0(control_unit.control_signals),
-        .S(S),
+        .S(HazardForwardingUnit.nop_signal),
         .mux_control_signals()
     );
 
@@ -180,7 +182,7 @@ reg S;
     WB_Destination wb_destination_mux(                                                      //DONE
         .rt(if_id_stage.instruction_reg[20:16]),
         .rd(if_id_stage.instruction_reg[15:11]),
-        .r31(mem_wb_stage.control_signals_out[20]),
+        .E(mux.mux_control_signals[19:18]),
         .destination()
     );
 
@@ -192,7 +194,7 @@ reg S;
         .R_W(ex_mem_stage.control_signals_out[4]), // Read/Write signal: 0 (Read), 1 (Write)
         .E(ex_mem_stage.control_signals_out[2]), // Enable signal
         .SE(ex_mem_stage.control_signals_out[3]), // Sign extension signal for halfword and byte operations
-        .DO() // Data output 
+        .DO(DataMEMOut) // Data output 
     );
 
     // Instantiate ALU
@@ -227,7 +229,7 @@ reg S;
 
     mux_2x1 MemMux(                                 // DONE
         .I0(ex_mem_stage.alu_result_out),
-        .I1(datamem.DO),
+        .I1(DataMEMOut),
         .S(ex_mem_stage.control_signals_out[2]),
         .Y()
     );
@@ -321,59 +323,59 @@ reg S;
         .Condition_Handler_Out()
     );
 
-Register R0 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[0]));
-Register R1 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[1]));
-Register R2 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[2]));
-Register R3 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[3]));
-Register R4 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[4]));
-Register R5 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[5]));
-Register R6 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[6]));
-Register R7 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[7]));
-Register R8 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[8]));
-Register R9 (.Q(),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[9]));
-Register R10 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[10]));
-Register R11 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[11]));
-Register R12 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[12]));
-Register R13 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[13]));
-Register R14 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[14]));
-Register R15 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[15]));
-Register R16 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[16]));
-Register R17 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[17]));
-Register R18 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[18]));
-Register R19 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[19]));
-Register R20 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[20]));
-Register R21 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[21]));
-Register R22 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[22]));
-Register R23 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[23]));
-Register R24 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[24]));
-Register R25 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[25]));
-Register R26 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[26]));
-Register R27 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[27]));
-Register R28 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[28]));
-Register R29 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[29]));
-Register R30 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[30]));
-Register R31 (.Q(), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[31]));
+// Register R0 (.Q(Q0),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[0]));
+// Register R1 (.Q(Q1),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[1]));
+// Register R2 (.Q(Q2),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[2]));
+// Register R3 (.Q(Q3),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[3]));
+// Register R4 (.Q(Q4),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[4]));
+// Register R5 (.Q(Q5),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[5]));
+// Register R6 (.Q(Q6),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[6]));
+// Register R7 (.Q(Q7),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[7]));
+// Register R8 (.Q(Q8),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[8]));
+// Register R9 (.Q(Q9),  .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[9]));
+// Register R10 (.Q(Q10), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[10]));
+// Register R11 (.Q(Q11), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[11]));
+// Register R12 (.Q(Q12), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[12]));
+// Register R13 (.Q(Q13), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[13]));
+// Register R14 (.Q(Q14), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[14]));
+// Register R15 (.Q(Q15), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[15]));
+// Register R16 (.Q(Q16), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[16]));
+// Register R17 (.Q(Q17), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[17]));
+// Register R18 (.Q(Q18), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[18]));
+// Register R19 (.Q(Q19), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[19]));
+// Register R20 (.Q(Q20), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[20]));
+// Register R21 (.Q(Q21), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[21]));
+// Register R22 (.Q(Q22), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[22]));
+// Register R23 (.Q(Q23), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[23]));
+// Register R24 (.Q(Q24), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[24]));
+// Register R25 (.Q(Q25), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[25]));
+// Register R26 (.Q(Q26), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[26]));
+// Register R27 (.Q(Q27), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[27]));
+// Register R28 (.Q(Q28), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[28]));
+// Register R29 (.Q(Q29), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[29]));
+// Register R30 (.Q(Q30), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[30]));
+// Register R31 (.Q(Q31), .D(mem_wb_stage.mem_wb_out), .clk(clk), .Ld(E[31]));
 
-BinaryDecoder decoder(
-    .E(E),
-    .C(register_file.RW),
-    .RF(control_unit.control_signals[8])
-); 
+// BinaryDecoder decoder(
+//     .E(E),
+//     .C(wb_destination_mux.destination),
+//     .RF(control_unit.control_signals[8])
+// ); 
 
 
-mux_32_Monitor mux_32_1_Monitor(
-    //outputs
-   .PA(), .PB(), .Y0(), .Y1(), .Y2(), .Y3(), .Y4(), .Y5(), .Y6(), .Y7(),
-  .Y8(), .Y9(), .Y10(), .Y11(), .Y12(), .Y13(), .Y14(), .Y15(),
-  .Y16(), .Y17(), .Y18(), .Y19(), .Y20(), .Y21(), .Y22(), .Y23(),
-  .Y24(), .Y25(), .Y26(), .Y27(), .Y28(), .Y29(), .Y30(), .Y31(),
+// mux_32_Monitor mux_32_1_Monitor(
+//     //outputs
+//    .PA(), .PB(), .Y0(), .Y1(), .Y2(), .Y3(), .Y4(), .Y5(), .Y6(), .Y7(),
+//   .Y8(), .Y9(), .Y10(), .Y11(), .Y12(), .Y13(), .Y14(), .Y15(),
+//   .Y16(), .Y17(), .Y18(), .Y19(), .Y20(), .Y21(), .Y22(), .Y23(),
+//   .Y24(), .Y25(), .Y26(), .Y27(), .Y28(), .Y29(), .Y30(), .Y31(),
 
-  //inputs
-  .rs(if_id_stage.instruction_reg[25:21]), .rt(if_id_stage.instruction_reg[20:16]), .R0(R0.Q), .R1(R1.Q), .R2(R2.Q), .R3(R3.Q), .R4(R4.Q), 
-  .R5(R5.Q), .R6(R6.Q), .R7(R7.Q), .R8(R8.Q), .R9(R9.Q), .R10(R10.Q), .R11(R11.Q), .R12(R12.Q), .R13(R13.Q), .R14(R14.Q), .R15(R15.Q),
-  .R16(R16.Q), .R17(R17.Q), .R18(R18.Q), .R19(R19.Q), .R20(R20.Q), .R21(R21.Q), .R22(R22.Q), .R23(R23.Q),
-  .R24(R24.Q), .R25(R25.Q), .R26(R26.Q), .R27(R27.Q), .R28(R28.Q), .R29(R29.Q), .R30(R30.Q), .R31(R31.Q)
-);
+//   //inputs
+//   .rs(if_id_stage.instruction_reg[25:21]), .rt(if_id_stage.instruction_reg[20:16]), .R0(Q0), .R1(Q1), .R2(Q2), .R3(Q3), .R4(Q4), 
+//   .R5(Q5), .R6(Q6), .R7(Q7), .R8(Q8), .R9(Q9), .R10(Q10), .R11(Q11), .R12(Q12), .R13(Q13), .R14(Q14), .R15(Q15),
+//   .R16(Q16), .R17(Q17), .R18(Q18), .R19(Q19), .R20(Q20), .R21(Q21), .R22(Q22), .R23(Q23),
+//   .R24(Q24), .R25(Q25), .R26(Q26), .R27(Q27), .R28(Q28), .R29(Q29), .R30(Q30), .R31(Q31)
+// );
 
 initial begin
     clk = 1'b0; // Initialize the clock
@@ -389,16 +391,18 @@ end
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
     
-    // $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
-    // pc.pc_out, ex_mem_stage.alu_result_out, R5.Q, R6.Q, R16.Q, R17.Q, R18.Q, mem_wb_stage.mem_wb_out, datamem.DO);
+    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
+    pc_wire_out, datamem.A, register_file.I5, register_file.I6, register_file.I16, register_file.I17, register_file.I18, mem_wb_stage.mem_wb_out, DataMEMOut);
 
-    $monitor("\n PC=%d, nPC=%d\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n\n Output PA Mux:%b\n ============================================================ \
-    \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b, \n\n Source Operand Handler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (contorl_signal_out[17:15]): %b, Output: %b\n============================================================",
-    pc.pc_out, npc.npc_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.Y,id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
+    // $monitor("\n PC=%d, nPC=%d\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n\n Output PA Mux:%b\n ============================================================ \
+    // \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b, \n\n Source Operand Handler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (control_signal_out[17:15]): %b, Output: %b\n============================================================",
+    // pc.pc_out, npc.npc_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.Y,id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
 
     //  $monitor("\n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b\n =======================",
     //  id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N);
 
+    //$monitor("PC= %d \nControl Unit Signal Output= %b\n Mux Output= %b\n ID_EX Control Signal= %b \n EX_MEM Control Signal = %b\n MEM_WB Control Signal= %b\n\n", pc_wire_out, control_unit.control_signals, mux.mux_control_signals, id_ex_stage.control_signals_out, ex_mem_stage.control_signals_out, mem_wb_stage.control_signals_out);
+ 
 end
 
 always @(HazardForwardingUnit.hazard_type) begin
@@ -483,7 +487,7 @@ join
 //     mem_wb_stage.control_signals_out[7], mem_wb_stage.control_signals_out[6:5], mem_wb_stage.control_signals_out[4], mem_wb_stage.control_signals_out[3], mem_wb_stage.control_signals_out[2], mem_wb_stage.control_signals_out[1], mem_wb_stage.control_signals_out[0]);    
 //     $display("===================================================================================================================================\n");
 //     // // Print DataOut
-//     // $display("\nDataOut=%b", datamem.DO);
+//     // $display("\nDataOut=%b", DataMEMOut);
 
 
 //   end

@@ -57,10 +57,10 @@ module HAZARD_FORWARDING_UNIT (
             end
         end
 
-        pa_selector = pa_selector_val;
-        pb_selector = pb_selector_val;
-        load_enable = load_enable_val;
-        pc_enable = pc_enable_val; 
-        nop_signal = nop_signal_val;
+        pa_selector <= pa_selector_val;
+        pb_selector <= pb_selector_val;
+        load_enable <= load_enable_val;
+        pc_enable <= pc_enable_val; 
+        nop_signal <= nop_signal_val;
     end
 endmodule

@@ -16,7 +16,7 @@ module EX_MEM_Stage (
     always @(posedge clk) begin
      if (reset) begin
             // Reset all registers
-            control_signals_out <= 22'b0;
+            control_signals_out <= 24'b0;
             PB_out <= 32'b0;
             alu_result_out <= 32'b0;
             destination_out <= 5'b0;
