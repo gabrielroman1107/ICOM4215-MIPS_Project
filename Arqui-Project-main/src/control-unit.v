@@ -104,7 +104,7 @@ parameter ADDI_OP    = 6'b001000,
           ORI_OP     = 6'b001101,
           XORI_OP    = 6'b001110,
           LW_OP      = 6'b100011,
-          SD_OP      = 6'b101011,
+          SD_OP      = 6'b111111,
           SB_OP      = 6'b101000,
           SH_OP      = 6'b101001,
           SW_OP      = 6'b101011,
@@ -218,6 +218,25 @@ always @ (instruction) begin
         Mux_Rs_Addr = 1'b0; //bit 22
         Addr_MUX = 1'b0; //bit 23
 
+    end else if (instruction[31:26] == LB_OP) begin 
+        // Handle LBU_OP case
+        ID_SourceOperand_3bits = 3'b100;
+        ID_ALU_OP = 4'b0000; 
+        ID_Load_Instr = 1'b1;
+        ID_RF_Enable = 1'b1;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b0;
+        ID_MEM_SE = 1'b1;   
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b1;
+        Conditional_Unconditional_Jump = 1'b0; //bit 21
+        Unconditional_Jump = 1'b0; //bit 20
+        Destination_Register = 2'b10; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
 
     end else if (instruction[31:26] == BGTZ_OP) begin // Handle BGTZ_OP case
         
@@ -337,7 +356,7 @@ always @ (instruction) begin
         ID_Enable_LO = 1'b0;
         ID_MEM_Enable = 1'b0;
         Conditional_Unconditional_Jump = 1'b1; 
-        Unconditional_Jump = 1'b0; // bit 20
+        Unconditional_Jump = 1'b1; // bit 20
         Destination_Register = 2'b0; //bit 18-19
         Mux_Rs_Addr = 1'b0; //bit 22
         Addr_MUX = 1'b0; //bit 23
@@ -362,7 +381,26 @@ always @ (instruction) begin
         Mux_Rs_Addr = 1'b0; //bit 22
         Addr_MUX = 1'b0; //bit 23
 
-    end 
+    end else if(instruction[31:26] == SD_OP)begin
+        ID_SourceOperand_3bits = 3'b000;
+        ID_ALU_OP = 4'b0000;
+        ID_Load_Instr = 1'b0;
+        ID_RF_Enable = 1'b0;
+        ID_B_Instr = 1'b0;
+        ID_TA_Instr = 1'b0;
+        ID_MEM_Size = 2'b00;
+        ID_MEM_RW = 1'b1;
+        ID_MEM_SE = 1'b0;
+        ID_Enable_HI = 1'b0;
+        ID_Enable_LO = 1'b0;
+        ID_MEM_Enable = 1'b1;
+        Conditional_Unconditional_Jump = 1'b0; 
+        Unconditional_Jump = 1'b0; // bit 20
+        Destination_Register = 2'b0; //bit 18-19
+        Mux_Rs_Addr = 1'b0; //bit 22
+        Addr_MUX = 1'b0; //bit 23
+
+    end  
 
     
                 // control_signals is a signal that represents the control signals for the MIPS processor.
