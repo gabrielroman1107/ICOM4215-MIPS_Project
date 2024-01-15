@@ -2,14 +2,14 @@
 module ID_EX_Stage ( //ID/EX
     input clk,
     input reset,
-    input wire [23:0] control_signals,
+    input wire [24:0] control_signals,
     input wire [15:0] id_ex_imm16,
     input wire [31:0] PA,
     input wire [31:0] PB,
     input wire [31:0] PC,
     input wire [31:0] RS_Address,
     input wire [4:0] destination,
-    output reg [23:0] control_signals_out,
+    output reg [24:0] control_signals_out,
     output reg [15:0] id_ex_imm16_out,
     output reg [31:0] PA_out,
     output reg [31:0] PB_out,
@@ -21,7 +21,7 @@ module ID_EX_Stage ( //ID/EX
     always @(posedge clk ) begin
         if (reset) begin
         // Inicializar registros en caso de reset'
-        control_signals_out <= 22'b0;
+        control_signals_out <= 25'b0;
         id_ex_imm16_out <= 16'b0;
         PA_out <= 32'b0;
         PB_out <= 32'b0;

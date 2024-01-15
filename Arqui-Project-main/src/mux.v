@@ -99,20 +99,24 @@ always @ (*) begin
 endmodule
 
 module WB_Destination (
-	input wire [4:0] rd,
+	input wire [4:0] rs,
 	input wire [4:0] rt,
-	input wire [1:0] E, //CHANGE TO ENABLE SIGNAL
+	input wire [4:0] rd,
+	input wire [2:0] E, //CHANGE TO ENABLE SIGNAL
 	output reg [4:0] destination
 );
 
 always @ (*) begin
-	if (E == 2'b11) begin
+	if (E == 3'b011) begin
 		destination = 5'b11111;
 	end
-	else if (E == 2'b10) begin // change up a bit
+	else if (E == 3'b010) begin // change up a bit
 		destination = rt;
 	end
-	else if (E == 2'b01)begin // change up a bit
+	else if (E == 3'b001)begin // change up a bit
+		destination = rs;
+	end
+	else if (E == 3'b100)begin
 		destination = rd;
 	end
 end

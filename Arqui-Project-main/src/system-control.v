@@ -80,6 +80,14 @@ reg S;
     .instruction_in(instruction_wire_out),
     .pc(pc.pc_out),
     .instruction_reg(),
+    .instruction_rs(),
+    .instruction_rt(),
+    .instruction_rd(),
+    .instruction_imm16(),
+    .instruction_opcode(),
+    .instruction_shamt(),
+    .instruction_funct(),
+    .instruction_address_26(),
     .PC()
     );
 
@@ -180,9 +188,10 @@ reg S;
     );
 
     WB_Destination wb_destination_mux(                                                      //DONE
-        .rt(if_id_stage.instruction_reg[20:16]),
-        .rd(if_id_stage.instruction_reg[15:11]),
-        .E(mux.mux_control_signals[19:18]),
+        .rt(if_id_stage.instruction_rt),
+        .rs(if_id_stage.instruction_rs),
+        .rd(if_id_stage.instruction_rd),
+        .E(mux.mux_control_signals[20:18]),
         .destination()
     );
 
@@ -272,7 +281,7 @@ reg S;
     mux_2x1 RS_address_mux(
         .I0(register_file.PA), //FROM RS
         .I1(PCadder.Out), //FROM ADDER
-        .S(mux.mux_control_signals[22]),                                         //DONE?
+        .S(mux.mux_control_signals[23]),                                         //DONE?
         .Y()
     );
 
@@ -289,7 +298,7 @@ reg S;
     mux_2x1 Base_Addr_Mux(
         .I0(SE_4addr26.extended),
         .I1(SE_4imm16.extended),
-        .S(mux.mux_control_signals[23]),                                       //DONE?
+        .S(mux.mux_control_signals[24]),                                       //DONE?
         .Y()
     );
 
@@ -303,7 +312,7 @@ reg S;
 
     NPC_PC_Handler npc_pc_handler(                                 //DONE
         .branch_signal(condition_handler.Condition_Handler_Out),
-        .jump_signal(control_unit.control_signals[20]),                         //DONE??
+        .jump_signal(control_unit.control_signals[21]),                         //DONE??
         .pc_source_select()
     );
 
@@ -352,6 +361,7 @@ end
 
     // $monitor("\n PC=%d, \nSourceOperandHandler: \n PB: %d, HI: %b,\n LO: %b, imm16: %d,\n SOH Opcode (control_signal_out[17:15]): %b, \n\nOutput: %d\n============================================================", pc.pc_out, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
 
+    // $monitor("\n PC:%d \n\n PC_MUX Input: %d, TA_MUX Input: %d, \n\n PC_MUX Select: %b, TA_MUX Select: %b, \n\n NPC_PC_Handler MUX: \n Branch Signal: %b, Jump Signal: %b, \n PC_Source_Select OUT: %d, \n\n PC_Adder: %d, \n\n PC_MUX Output: %d\n =======================", pc.pc_out, pc_mux.nPC, pc_mux.TA, pc_mux.select, pc_mux.select, npc_pc_handler.branch_signal, npc_pc_handler.jump_signal, npc_pc_handler.pc_source_select, PCadder.Out, pc_mux.Out);
 
 // $monitor("\n PC=%d, \nInput0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n S:%b \n\nOutput PA Mux:%b\n ============================================================\n \
 //  \nInput0 (PB Register File) PB Mux:%b\n Input1 PB MUX:%b,\n Input2 PB MUX:%b, \n Input3 PB MUX:%b\n S:%b,  \n\nOutput MuxB:%b \n ============================================================\n", pc.pc_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.S, muxA.Y, muxB.I0, muxB.I1, muxB.I2, muxB.I3, muxB.S ,muxB.Y);
@@ -359,7 +369,7 @@ end
     //$monitor("PC= %d \nControl Unit Signal Output= %b\n Mux Output= %b\n ID_EX Control Signal= %b \n EX_MEM Control Signal = %b\n MEM_WB Control Signal= %b\n\n", pc_wire_out, control_unit.control_signals, mux.mux_control_signals, id_ex_stage.control_signals_out, ex_mem_stage.control_signals_out, mem_wb_stage.control_signals_out);
  
     // $monitor("PC= %d, \nControl Unit Signal Output= %b\n \nAddr_MUX=%b, Mux_Rs_Addr=%b, Conditional_Unconditional_Jump=%b, Unconditional_Jump=%b, Destination_Register=%b,\n SourceOperand_3bits=%b, ALU_OP=%b, B_Instr=%b, Load_Instr=%b, RF_Enable=%b,  \nTA_Instr=%b, MEM_Size=%b, MEM_RW=%b, MEM_SE=%b, MEM_Enable=%b, Enable_HI=%b, Enable_LO=%b \
-    // \n\nControl_Unit_Mux Output= %b\n ID_EX Control Signal= %b \n EX_MEM Control Signal = %b\n MEM_WB Control Signal= %b\n\n", pc_wire_out, control_unit.control_signals, control_unit.control_signals[23], control_unit.control_signals[22], control_unit.control_signals[21], control_unit.control_signals[20],control_unit.control_signals[19:18], 
+    // \n\nControl_Unit_Mux Output= %b\n ID_EX Control Signal= %b \n EX_MEM Control Signal = %b\n MEM_WB Control Signal= %b\n\n", pc_wire_out, control_unit.control_signals, control_unit.control_signals[24], control_unit.control_signals[23], control_unit.control_signals[22], control_unit.control_signals[21],control_unit.control_signals[20:18], 
     // control_unit.control_signals[17:15],control_unit.control_signals[14:11], control_unit.control_signals[10], control_unit.control_signals[9], control_unit.control_signals[8], 
     // control_unit.control_signals[7], control_unit.control_signals[6:5], control_unit.control_signals[4], control_unit.control_signals[3], control_unit.control_signals[2], 
     // control_unit.control_signals[1], control_unit.control_signals[0], mux.mux_control_signals, id_ex_stage.control_signals_out, ex_mem_stage.control_signals_out, mem_wb_stage.control_signals_out);
@@ -425,15 +435,15 @@ join
 //     $display("ID_B_Instr=%b", control_unit.control_signals[10]);
 //     $display("ID_ALU_OP=%b", control_unit.control_signals[14:11]);
 //     $display("ID_SourceOperand_3bits=%b", control_unit.control_signals[17:15]);
-//     $display("Destination_Register=%b", control_unit.control_signals[19:18]);
-//     $display("Unconditional_Jump=%b", control_unit.control_signals[20]);
-//     $display("Conditional_Unconditional_Jump=%b", control_unit.control_signals[21]);
-//     $display("Mux_Rs_Addr=%b", control_unit.control_signals[22]);
-//     $display("Addr_MUX=%b", control_unit.control_signals[23]);
+//     $display("Destination_Register=%b", control_unit.control_signals[20:18]);
+//     $display("Unconditional_Jump=%b", control_unit.control_signals[21]);
+//     $display("Conditional_Unconditional_Jump=%b", control_unit.control_signals[22]);
+//     $display("Mux_Rs_Addr=%b", control_unit.control_signals[23]);
+//     $display("Addr_MUX=%b", control_unit.control_signals[24]);
     
 //     $display("\nID/EX:\nControl Signal= %b", id_ex_stage.control_signals_out);
 //     $display("\nID/EX_Addr_MUX=%b, ID/EX_Mux_Rs_Addr=%b, ID/EX_Conditional_Unconditional_Jump=%b, ID/EX_Unconditional_Jump=%b, ID/EX_Destination_Register=%b,\nID/EX_SourceOperand_3bits=%b, ID/EX_ALU_OP=%b, ID/EX_B_Instr=%b, ID/EX_Load_Instr=%b, ID/EX_RF_Enable=%b,  \nID/EX_TA_Instr=%b, ID/EX_MEM_Size=%b, ID/EX_MEM_RW=%b, ID/EX_MEM_SE=%b, ID/EX_MEM_Enable=%b, ID/EX_Enable_HI=%b, ID/EX_Enable_LO=%b", 
-//     id_ex_stage.control_signals_out[23], id_ex_stage.control_signals_out[22], id_ex_stage.control_signals_out[21], id_ex_stage.control_signals_out[20],id_ex_stage.control_signals_out[19:18], id_ex_stage.control_signals_out[17:15],id_ex_stage.control_signals_out[14:11], id_ex_stage.control_signals_out[10], id_ex_stage.control_signals_out[9], id_ex_stage.control_signals_out[8], 
+//     id_ex_stage.control_signals_out[24], id_ex_stage.control_signals_out[23], id_ex_stage.control_signals_out[22], id_ex_stage.control_signals_out[21],id_ex_stage.control_signals_out[20:18], id_ex_stage.control_signals_out[17:15],id_ex_stage.control_signals_out[14:11], id_ex_stage.control_signals_out[10], id_ex_stage.control_signals_out[9], id_ex_stage.control_signals_out[8], 
 //     id_ex_stage.control_signals_out[7], id_ex_stage.control_signals_out[6:5], id_ex_stage.control_signals_out[4], id_ex_stage.control_signals_out[3], id_ex_stage.control_signals_out[2], id_ex_stage.control_signals_out[1], id_ex_stage.control_signals_out[0]);
 
 //     // $display("ID/EX_Enable_LO=%b, ID/EX_Enable_HI=%b, ID/EX_MEM_Enable=%b, ID/EX_MEM_SE=%b, ID/EX", id_ex_stage.control_signals_out[0]);
