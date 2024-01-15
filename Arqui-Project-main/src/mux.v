@@ -79,8 +79,8 @@ module mux_2x1 (
 
 always @ (*) begin
 	case (S)
-		0: Y = I0;
-		1: Y = I1;
+		1'b0: Y = I0;
+		1'b1: Y = I1;
 	endcase
 	end
 endmodule
@@ -92,8 +92,8 @@ module TA_Mux (
 
 always @ (*) begin
 	case (S)
-		0: Y = I0;
-		1: Y = I1;
+		1'b0: Y = I0;
+		1'b1: Y = I1;
 	endcase
 	end
 endmodule

@@ -101,14 +101,14 @@ reg S;
         .clk(clk),
         .reset(reset),
         .control_signals(mux.mux_control_signals),
-        .id_ex_instruction(if_id_stage.instruction_reg),
+        .id_ex_imm16(if_id_stage.instruction_reg[15:0]),
         .destination(wb_destination_mux.destination),
         .PA(muxA.Y),
         .PB(muxB.Y),
         .PC(if_id_stage.PC),
         .RS_Address(RS_address_mux.Y),
         .destination_out(),
-        .id_ex_instruction_out(),
+        .id_ex_imm16_out(),
         .RS_Address_out(),
         .PA_out(),
         .PB_out(),
@@ -240,7 +240,7 @@ reg S;
         .HI(hi_mux.Y), 
         .LO(lo_mux.Y), 
         .PC(id_ex_stage.PC_out),
-        .imm16(id_ex_stage.id_ex_instruction_out[15:0]),
+        .imm16(id_ex_stage.id_ex_imm16_out),
         .S(id_ex_stage.control_signals_out[17:15]),
         .N()
     );
@@ -337,20 +337,20 @@ end
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
     
-    // $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
-    // pc_wire_out, datamem.A, register_file.I5, register_file.I6, register_file.I16, register_file.I17, register_file.I18, mem_wb_stage.mem_wb_out, DataMEMOut);
+    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
+    pc_wire_out, datamem.A, register_file.I5, register_file.I6, register_file.I16, register_file.I17, register_file.I18, mem_wb_stage.mem_wb_out, DataMEMOut);
 
-    $monitor("\nPC: %0d, Data Mem Address: %0d, \n\nR0: %0d, R1: %0d, R2: %0d, R3: %0d, R4: %0d, R5: %0d,\nR6: %0d, R7: %0d, R8: %0d, R9: %0d, R10: %0d,\nR11: %0d, R12: %0d, R13: %0d, R14: %0d, R15: %0d,\nR16: %0d, R17: %0d, R18: %0d, R19: %0d, R20: %0d,\nR21: %0d, R22: %0d, R23: %0d, R24: %0d, R25: %0d,\nR26: %0d, R27: %0d, R28: %0d, R29: %0d, R30: %0d, R31: %0d\n======================================================",
-    pc_wire_out, datamem.A, register_file.I0, register_file.I1, register_file.I2, register_file.I3, register_file.I4, register_file.I5, register_file.I6, register_file.I7, register_file.I8, register_file.I9, register_file.I10, register_file.I11, register_file.I12, register_file.I13, register_file.I14, register_file.I15, register_file.I16, register_file.I17, register_file.I18, register_file.I19, register_file.I20, register_file.I21, register_file.I22, register_file.I23, register_file.I24, register_file.I25, register_file.I26, register_file.I27, register_file.I28, register_file.I29, register_file.I30, register_file.I31);
+    // $monitor("\nPC: %0d, Data Mem Address: %0d, \n\nR0: %0d, R1: %0d, R2: %0d, R3: %0d, R4: %0d, R5: %0d,\nR6: %0d, R7: %0d, R8: %0d, R9: %0d, R10: %0d,\nR11: %0d, R12: %0d, R13: %0d, R14: %0d, R15: %0d,\nR16: %0d, R17: %0d, R18: %0d, R19: %0d, R20: %0d,\nR21: %0d, R22: %0d, R23: %0d, R24: %0d, R25: %0d,\nR26: %0d, R27: %0d, R28: %0d, R29: %0d, R30: %0d, R31: %0d\n======================================================",
+    // pc_wire_out, datamem.A, register_file.I0, register_file.I1, register_file.I2, register_file.I3, register_file.I4, register_file.I5, register_file.I6, register_file.I7, register_file.I8, register_file.I9, register_file.I10, register_file.I11, register_file.I12, register_file.I13, register_file.I14, register_file.I15, register_file.I16, register_file.I17, register_file.I18, register_file.I19, register_file.I20, register_file.I21, register_file.I22, register_file.I23, register_file.I24, register_file.I25, register_file.I26, register_file.I27, register_file.I28, register_file.I29, register_file.I30, register_file.I31);
 
     // $monitor("\n PC=%d, nPC=%d\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n\n Output PA Mux:%b\n ============================================================ \
     // \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b, \n\n Source Operand Handler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (control_signal_out[17:15]): %b, Output: %b\n============================================================",
     // pc.pc_out, npc.npc_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.Y,id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
 
-    //  $monitor("\n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b\n =======================",
-    //  ex_alu.A, ex_alu.B, ex_alu.Opcode, ex_alu.Out, ex_alu.Z, ex_alu.N);
+    //  $monitor("\n PC:%d \n\nInputA (MUX PA OUT) EX_ALU: %d,\n InputB (S2H Out) EX_ALU: %d,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %d, \n Z:%b & N:%b\n =======================",
+    //  pc.pc_out, ex_alu.A, ex_alu.B, ex_alu.Opcode, ex_alu.Out, ex_alu.Z, ex_alu.N);
 
-    //$monitor("\n PC=%d, \nSourceOperandHandler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (control_signal_out[17:15]): %b, \n\nOutput: %b\n============================================================", pc.pc_out, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
+    // $monitor("\n PC=%d, \nSourceOperandHandler: \n PB: %d, HI: %b,\n LO: %b, imm16: %d,\n SOH Opcode (control_signal_out[17:15]): %b, \n\nOutput: %d\n============================================================", pc.pc_out, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
 
 
 // $monitor("\n PC=%d, \nInput0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n S:%b \n\nOutput PA Mux:%b\n ============================================================\n \
