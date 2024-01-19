@@ -1,7 +1,7 @@
 module ALU (
-    input [31:0] A,
-    input [31:0] B,
-    input [3:0] Opcode,
+    input wire [31:0] A,
+    input wire [31:0] B,
+    input wire [3:0] Opcode,
     output reg [31:0] Out,
     output reg Z,
     output reg N
@@ -38,7 +38,10 @@ always @(*) begin // @(*) means "always when any of the inputs change"
             Out = $signed(A) >>> B;
         // If (A < B) then Out = 1, else Out = 0
         4'b1001:
-            Out = (A < B) ? 32'b1 : 32'b0; // 32'b1 is the same as 32'h1
+            if (A < B)
+                Out = 1;
+            else
+                Out = 0;
         // Pass A
         4'b1010:
             Out = A;
@@ -51,11 +54,19 @@ always @(*) begin // @(*) means "always when any of the inputs change"
         // Not Used
         4'b1101, 4'b1110, 4'b1111:
             Out = 32'b0; // Undefined operation, output 0
+        default:
+            Out = 32'b0; // Undefined operation, output 0
     endcase
 
     // Generate flags
-    Z = (Out == 32'b0); //If Out is 0, then Z = 1
-    N = (Out[31] == 1'b1); //If Out is negative, then N = 1
-end
+    if(Opcode == 4'b0000 || Opcode == 4'b0001 || Opcode == 4'b1001 || Opcode == 4'b1010 || Opcode == 4'b1011) begin
+        Z = (Out == 32'b0) ? 1'b1 : 1'b0; //If Out is 0, then Z = 1
+        N = (Out[31] == 1'b1) ? 1'b1 : 1'b0; //If Out is negative, then N = 1
+    end
+    else begin
+        Z = 1'b0;
+        N = 1'b0;
+    end
+end 
 
 endmodule

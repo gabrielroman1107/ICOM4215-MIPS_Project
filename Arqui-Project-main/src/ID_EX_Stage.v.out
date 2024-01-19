@@ -1,0 +1,88 @@
+#! /mingw32/bin/vvp
+:ivl_version "12.0 (devel)" "(s20150603-1391-gd480c4d7d)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "C:\msys64\mingw32\lib\ivl\system.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_sys.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\vhdl_textio.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\v2005_math.vpi";
+:vpi_module "C:\msys64\mingw32\lib\ivl\va_math.vpi";
+S_01886a30 .scope module, "ID_EX_Stage" "ID_EX_Stage" 2 2;
+ .timescale 0 0;
+    .port_info 0 /INPUT 1 "clk";
+    .port_info 1 /INPUT 1 "reset";
+    .port_info 2 /INPUT 22 "control_signals";
+    .port_info 3 /INPUT 32 "PA";
+    .port_info 4 /INPUT 32 "PB";
+    .port_info 5 /INPUT 32 "PC";
+    .port_info 6 /INPUT 32 "RS_Address";
+    .port_info 7 /INPUT 5 "destination";
+    .port_info 8 /OUTPUT 22 "control_signals_out";
+    .port_info 9 /OUTPUT 32 "PA_out";
+    .port_info 10 /OUTPUT 32 "PB_out";
+    .port_info 11 /OUTPUT 32 "PC_out";
+    .port_info 12 /OUTPUT 32 "RS_Address_out";
+    .port_info 13 /OUTPUT 5 "destination_out";
+o018c4fb4 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v01886bb8_0 .net "PA", 31 0, o018c4fb4;  0 drivers
+v01886c10_0 .var "PA_out", 31 0;
+o018c4fe4 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0188d798_0 .net "PB", 31 0, o018c4fe4;  0 drivers
+v0188d7f0_0 .var "PB_out", 31 0;
+o018c5014 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0188d848_0 .net "PC", 31 0, o018c5014;  0 drivers
+v0188d8a0_0 .var "PC_out", 31 0;
+o018c5044 .functor BUFZ 32, C4<zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0188d8f8_0 .net "RS_Address", 31 0, o018c5044;  0 drivers
+v0188d950_0 .var "RS_Address_out", 31 0;
+o018c5074 .functor BUFZ 1, C4<z>; HiZ drive
+v0188d9a8_0 .net "clk", 0 0, o018c5074;  0 drivers
+o018c508c .functor BUFZ 22, C4<zzzzzzzzzzzzzzzzzzzzzz>; HiZ drive
+v0188da48_0 .net "control_signals", 21 0, o018c508c;  0 drivers
+v0188daa0_0 .var "control_signals_out", 21 0;
+o018c50bc .functor BUFZ 5, C4<zzzzz>; HiZ drive
+v0188daf8_0 .net "destination", 4 0, o018c50bc;  0 drivers
+v0188db50_0 .var "destination_out", 4 0;
+o018c50ec .functor BUFZ 1, C4<z>; HiZ drive
+v0188dba8_0 .net "reset", 0 0, o018c50ec;  0 drivers
+E_0188b0d8 .event posedge, v0188d9a8_0;
+    .scope S_01886a30;
+T_0 ;
+    %wait E_0188b0d8;
+    %load/vec4 v0188dba8_0;
+    %flag_set/vec4 8;
+    %jmp/0xz  T_0.0, 8;
+    %pushi/vec4 0, 0, 22;
+    %assign/vec4 v0188daa0_0, 0;
+    %pushi/vec4 0, 0, 32;
+    %assign/vec4 v01886c10_0, 0;
+    %pushi/vec4 0, 0, 32;
+    %assign/vec4 v0188d7f0_0, 0;
+    %pushi/vec4 0, 0, 32;
+    %assign/vec4 v0188d8a0_0, 0;
+    %pushi/vec4 0, 0, 5;
+    %assign/vec4 v0188db50_0, 0;
+    %pushi/vec4 0, 0, 32;
+    %assign/vec4 v0188d950_0, 0;
+    %jmp T_0.1;
+T_0.0 ;
+    %load/vec4 v0188da48_0;
+    %assign/vec4 v0188daa0_0, 0;
+    %load/vec4 v01886bb8_0;
+    %assign/vec4 v01886c10_0, 0;
+    %load/vec4 v0188d798_0;
+    %assign/vec4 v0188d7f0_0, 0;
+    %load/vec4 v0188d848_0;
+    %assign/vec4 v0188d8a0_0, 0;
+    %load/vec4 v0188daf8_0;
+    %assign/vec4 v0188db50_0, 0;
+    %load/vec4 v0188d8f8_0;
+    %assign/vec4 v0188d950_0, 0;
+T_0.1 ;
+    %jmp T_0;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 3;
+    "N/A";
+    "<interactive>";
+    "ID_EX_Stage.v";
