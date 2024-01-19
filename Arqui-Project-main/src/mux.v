@@ -168,7 +168,8 @@ module PC_Mux(
         case (select)
             2'b00: Out = nPC;
             2'b01: Out = TA;
-            2'b10: Out = jump_target;
+            //2'b10: Out = jump_target;
+			//2'b10: Out =nPC;
             default: Out = 32'b0;
         endcase
     end

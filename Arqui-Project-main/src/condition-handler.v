@@ -7,6 +7,7 @@ module Condition_Handler (
     input wire N
 ); 
 
+reg taken;
 // Define opcodes for the instructions
 localparam [5:0] 
     OPCODE_RTYPE = 6'b000000,
@@ -72,51 +73,85 @@ localparam [4:0]
 
 
 always @* begin
-    if(branch_instruction)begin
-    case (instruction[31:26])
-        OPCODE_BNE: begin //not equal
-            if(Z == 0) Condition_Handler_Out <= 1'b1;
-            else Condition_Handler_Out <= 1'b0;
-        end
-
-        OPCODE_BEQ: begin //equal
-            if(Z == 1) Condition_Handler_Out <= 1'b1;
-            else Condition_Handler_Out <= 1'b0;
-        end
-        OPCODE_BGTZ: begin //greater than zero
-            if(instruction[20:16] == 5'b00000) begin
-                if((Z == 0) && (N == 0)) Condition_Handler_Out <= 1'b1;
-                else Condition_Handler_Out <= 1'b0;
-            end
-        end 
-        OPCODE_BLEZ: begin //lesser or equal than zero
-            if(instruction[20:16] == 5'b00000) begin
-                if((Z == 1) || (N == 1)) Condition_Handler_Out <= 1'b1;
-                else Condition_Handler_Out <= 1'b0;
-            end
-        end // acomodar para chequiar rt con BGTZ y BLEZ
-        OPCODE_REGIMM: begin
-            case (instruction[20:16])
-              RT_BAL: begin //BAL (BGEZAL) //branch and link
-                    Condition_Handler_Out <= 1'b1;
-              end
-              RT_BGEZ: begin //greater or equal than zero
-                    if((Z == 1) || (N == 0)) Condition_Handler_Out <= 1'b1;
-                    else Condition_Handler_Out <= 1'b0;
-              end
-              RT_BLTZ: begin //lesser than zero
-                    if((Z == 0) && (N == 1)) Condition_Handler_Out <= 1'b1;
-                    else Condition_Handler_Out <= 1'b0;
-              end
-              RT_BLTZAL: begin //lesser than zero and link
-                    if(N == 1) Condition_Handler_Out <= 1'b1;
-                    else Condition_Handler_Out <= 1'b0;
-              end
-            endcase
-        end
+        // $display("OPCode: %b\n", instruction[31:26]);
+        // $display("RT: %b\n", instruction[20:16]);
+        // $display("Branch_Instr:%b\n", branch_instruction);
         
-    endcase
-    end else Condition_Handler_Out = 1'b0;
-end
+    if(branch_instruction && (instruction[31:26] == OPCODE_REGIMM) && (instruction[20:16] == RT_BGEZ))begin 
+            if((Z == 1) || (N == 0)) begin
+            Condition_Handler_Out <= 1'b1;
+            end else Condition_Handler_Out <= 1'b0;
+    end else if((instruction[31:26] == OPCODE_BEQ) && (instruction[25:21] == 0) && (instruction[20:16] == 0))begin 
+            Condition_Handler_Out <= 1'b1;
+    end else Condition_Handler_Out <= 1'b0;
+    end
+
+     
+       
+
+//     if(branch_instruction)begin
+//         $display("Opcode: %b\n", OPCODE_REGIMM);
+//         $display("RT: %b\n", RT_BGEZ);
+//     case (instruction[31:26])  
+//         OPCODE_BNE: begin //not equal
+//             if(Z == 0) begin
+//                 Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//             end
+//             else Condition_Handler_Out <= 1'b0;
+//         end
+
+//         OPCODE_BEQ: begin //equal
+//             if(Z == 1) begin
+//                 Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//             end
+//             else Condition_Handler_Out <= 1'b0;
+//         end
+//         OPCODE_BGTZ: begin //greater than zero
+//             if(instruction[20:16] == 5'b00000) begin
+//                 if((Z == 0) && (N == 0)) begin
+//                 Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//                 end
+//                 else Condition_Handler_Out <= 1'b0;
+//             end
+//         end 
+//         OPCODE_BLEZ: begin //lesser or equal than zero
+//             if(instruction[20:16] == 5'b00000) begin
+//                 if((Z == 1) || (N == 1)) begin
+//                     Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//                 end
+//                 else Condition_Handler_Out <= 1'b0;
+//             end
+//         end // acomodar para chequiar rt con BGTZ y BLEZ
+//         OPCODE_REGIMM: begin
+//             case (instruction[20:16])
+//               RT_BAL: begin //BAL (BGEZAL) //branch and link
+//                     Condition_Handler_Out <= 1'b1;
+//                     taken = 1'b1;
+//               end
+//               RT_BGEZ: begin //greater or equal than zero
+//                     if((Z == 1) || (N == 0)) begin 
+//                         Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//                     end
+//                     else Condition_Handler_Out <= 1'b0;    
+//               end
+//               RT_BLTZ: begin //lesser than zero
+//                     if((Z == 0) && (N == 1)) begin
+//                         Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//                     end
+//                     else Condition_Handler_Out <= 1'b0;
+//               end
+//               RT_BLTZAL: begin //lesser than zero and link
+//                     if(N == 1) begin
+//                         Condition_Handler_Out <= 1'b1; taken = 1'b1;
+//                     end
+//                     else Condition_Handler_Out <= 1'b0;
+//               end
+//             endcase
+//         end
+        
+//     endcase
+//     end else Condition_Handler_Out = 1'b0;
+// end
+
 
 endmodule

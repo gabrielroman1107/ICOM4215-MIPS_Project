@@ -4,7 +4,7 @@ module SE_4addr26(
     );
 
     always @* begin
-        extended = $signed(extend * 4);
+        extended = ({{26{extend[25]}}, extend} <<2);
     end
 endmodule
 
@@ -14,6 +14,6 @@ module SE_4imm16(
     );
 
     always @* begin
-        extended = $signed(extend * 4);
+        extended = ({{16{extend[15]}}, extend} <<2);
     end
 endmodule

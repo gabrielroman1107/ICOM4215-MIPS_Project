@@ -16,6 +16,7 @@
 `include "NPC-Register.v"
 `include "Adders.v"
 `include "Sign_Extenders.v"
+`include "OR.v"
 
 
 module system_control (
@@ -48,7 +49,7 @@ reg S;
 
     wire [31:0] E;
 
-    integer i, finished, pc_count;
+    reg [31:0] PC,PC_4,PC_4_EX;
     
 
  // Instantiate NPC Register
@@ -63,22 +64,24 @@ reg S;
     PC_Register pc (       //load_enable set to on for simplicity                                       //DONE
         .clk(clk),
         .reset(reset),
-        .pc_in(npc_wire_out),
+        .le(HazardForwardingUnit.pc_enable),
+        .pc_in(pc_wire_in),
         .pc_out(pc_wire_out)
     );
 
     // Instantiate Adder+4 
     Adder_4 adder (                                              //DONE
-        .adder_in(npc_wire_out),
+        .adder_in(pc_mux.Out),
         .adder_out()
     );
 
     //Instantiate IF_Stage
     IF_ID_Stage if_id_stage(                                        //DONE
     .clk(clk),
-    .reset(reset),
+    .reset(or_IF_ID.Out),
+    .load_enable(HazardForwardingUnit.load_enable),
     .instruction_in(instruction_wire_out),
-    .pc(pc.pc_out),
+    .pc(pc_wire_out),
     .instruction_reg(),
     .instruction_rs(),
     .instruction_rt(),
@@ -89,6 +92,12 @@ reg S;
     .instruction_funct(),
     .instruction_address_26(),
     .PC()
+    );
+
+    Reset_OR or_IF_ID(
+    .a(condition_handler.Condition_Handler_Out),
+    .b(reset),
+    .Out()
     );
 
 
@@ -108,6 +117,7 @@ reg S;
     ID_EX_Stage id_ex_stage(                                        //DONE
         .clk(clk),
         .reset(reset),
+        .ex_instruction(if_id_stage.instruction_reg),
         .control_signals(mux.mux_control_signals),
         .id_ex_imm16(if_id_stage.instruction_reg[15:0]),
         .destination(wb_destination_mux.destination),
@@ -115,6 +125,7 @@ reg S;
         .PB(muxB.Y),
         .PC(if_id_stage.PC),
         .RS_Address(RS_address_mux.Y),
+        .instruction_reg(),
         .destination_out(),
         .id_ex_imm16_out(),
         .RS_Address_out(),
@@ -143,7 +154,7 @@ reg S;
         .clk(clk),
         .reset(reset),
         .control_signals(ex_mem_stage.control_signals_out),
-        .destination(id_ex_stage.destination_out),
+        .destination(ex_mem_stage.destination_out),
         .mem_mux_out(MemMux.Y),
         .destination_out(),
         .control_signals_out(),
@@ -151,7 +162,7 @@ reg S;
     );
         // Instantiate Instruction Memory
     InstructionMemory imem(                                                  //DONE
-        .A(pc.pc_out[8:0]),
+        .A(pc_wire_out[8:0]),
         .I(instruction_wire_out)
     );
 
@@ -219,9 +230,9 @@ reg S;
     // Instantiate MUX
     mux_4x1 muxA(                                   //DONE
         .I0(register_file.PA),
-        .I1(MemMux.Y),
-        .I2(mem_wb_stage.mem_wb_out),
-        .I3(ex_alu.Out),
+        .I1(ex_alu.Out),
+        .I2(MemMux.Y),
+        .I3(mem_wb_stage.mem_wb_out),
         .S(HazardForwardingUnit.pa_selector),
         .Y()
     );
@@ -229,9 +240,9 @@ reg S;
     // Instantiate MUX
     mux_4x1 muxB(                                   // DONE
         .I0(register_file.PB),
-        .I1(MemMux.Y),
-        .I2(mem_wb_stage.mem_wb_out),
-        .I3(ex_alu.Out),
+        .I1(ex_alu.Out),
+        .I2(MemMux.Y),
+        .I3(mem_wb_stage.mem_wb_out),
         .S(HazardForwardingUnit.pb_selector),
         .Y()
     );
@@ -239,7 +250,7 @@ reg S;
     mux_2x1 MemMux(                                 // DONE
         .I0(ex_mem_stage.alu_result_out),
         .I1(DataMEMOut),
-        .S(ex_mem_stage.control_signals_out[2]),
+        .S(ex_mem_stage.control_signals_out[2]), //maybe 3 bits cause PC adder 
         .Y()
     );
 
@@ -270,9 +281,9 @@ reg S;
     
     // Instantiate TA Mux                                                //DONE
     mux_2x1 TA_Mux(
-        .I0(RS_address_mux.Y), //ID_TA_Instr
-        .I1(id_ex_stage.RS_Address_out),
-        .S(condition_handler.Condition_Handler_Out),           
+        .I0(id_ex_stage.RS_Address_out), //ID_TA_Instr 
+        .I1(RS_address_mux.Y),
+        .S(mux.mux_control_signals[21]),                                         //DONE?           
         .Y()
     );
 
@@ -304,20 +315,21 @@ reg S;
 
     PC_Mux pc_mux(
         .nPC(npc.npc_out),
+        // .jump_target(if_id_stage.instruction_address_26),
         .TA(TA_Mux.Y),
         .select(npc_pc_handler.pc_source_select),               //DONE
-        .Out()
+        .Out(pc_wire_in)
     );
 
 
     NPC_PC_Handler npc_pc_handler(                                 //DONE
         .branch_signal(condition_handler.Condition_Handler_Out),
-        .jump_signal(control_unit.control_signals[21]),                         //DONE??
+        .jump_signal(id_ex_stage.control_signals_out[21]),                         //DONE??
         .pc_source_select()
     );
 
     ALU PCadder(   //PC + Base Addr Mux                         //DONE
-        .A(if_id_stage.PC),
+        .A(if_id_stage.PC +4),
         .B(Base_Addr_Mux.Y),
         .Opcode(4'b0000), // ALU Operation Code For Sum
         .Out()
@@ -325,7 +337,7 @@ reg S;
 
    // Instantiate Condition Handler
     Condition_Handler condition_handler(                                    //DONE
-        .instruction(if_id_stage.instruction_reg),
+        .instruction(id_ex_stage.instruction_reg),
         .branch_instruction(id_ex_stage.control_signals_out[10]),
         .Z(ex_alu.Z),
         .N(ex_alu.N),
@@ -335,7 +347,7 @@ reg S;
 initial begin
     clk = 1'b0; // Initialize the clock
     reset = 1'b1; // Reset the circuit
-    finished = 1'b0;
+
 
 
     forever #2 clk = ~clk;
@@ -346,15 +358,23 @@ end
     $readmemb("precargas/phase4.txt", imem.mem);
     $readmemb("precargas/phase4.txt", datamem.mem);
     
-    $monitor("\n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n======================================================", 
-    pc_wire_out, datamem.A, register_file.I5, register_file.I6, register_file.I16, register_file.I17, register_file.I18, mem_wb_stage.mem_wb_out, DataMEMOut);
+    $monitor("\n Entrada RS_RF MUX: %d, Entrada ADDER MUX: %d   \n\nPC: %0d, Data Mem Address: %0d, \n\nR5: %0d, R6: %0d, R16: %0d, R17: %0d, R18: %0d, \n\nWB Out: %0d,\n\nData Memory Out: %0d\n\nDataMemory contents at Address 55: %b\n\n======================================================", 
+    RS_address_mux.I0, RS_address_mux.I1, pc_wire_out, datamem.A, register_file.I5, register_file.I6, register_file.I16, register_file.I17, register_file.I18, mem_wb_stage.mem_wb_out, DataMEMOut, datamem.mem[55]);
+
+    // $monitor("\nPC: %0d, Condition Handler:\n  \nCondition Handler Output: %b\n======================================================", pc_wire_out, condition_handler.Condition_Handler_Out);
+
+
+// $monitor("\nPC: %0d, nPC: %0d\nTA_MUX Input: %0d, TA_MUX Input: %0d\nTA_MUX Select: %b\nTA_MUX Output: %0d\n\nPC_MUX Input: %0d, TA_MUX Input: %0d\nPC_MUX Select: %b\nPC_MUX Output: %0d\n\nNPC_PC_Handler Inputs: \nBranch Signal: %b\nJump Signal: %b\nNPC_PC_Handler Output: %0d\n======================================================",
+//     pc.pc_out, npc.npc_out, TA_Mux.I0, TA_Mux.I1, TA_Mux.S, TA_Mux.Y, pc_mux.nPC, pc_mux.TA, pc_mux.select, pc_mux.Out, npc_pc_handler.branch_signal, npc_pc_handler.jump_signal, npc_pc_handler.pc_source_select);
+
 
     // $monitor("\nPC: %0d, Data Mem Address: %0d, \n\nR0: %0d, R1: %0d, R2: %0d, R3: %0d, R4: %0d, R5: %0d,\nR6: %0d, R7: %0d, R8: %0d, R9: %0d, R10: %0d,\nR11: %0d, R12: %0d, R13: %0d, R14: %0d, R15: %0d,\nR16: %0d, R17: %0d, R18: %0d, R19: %0d, R20: %0d,\nR21: %0d, R22: %0d, R23: %0d, R24: %0d, R25: %0d,\nR26: %0d, R27: %0d, R28: %0d, R29: %0d, R30: %0d, R31: %0d\n======================================================",
     // pc_wire_out, datamem.A, register_file.I0, register_file.I1, register_file.I2, register_file.I3, register_file.I4, register_file.I5, register_file.I6, register_file.I7, register_file.I8, register_file.I9, register_file.I10, register_file.I11, register_file.I12, register_file.I13, register_file.I14, register_file.I15, register_file.I16, register_file.I17, register_file.I18, register_file.I19, register_file.I20, register_file.I21, register_file.I22, register_file.I23, register_file.I24, register_file.I25, register_file.I26, register_file.I27, register_file.I28, register_file.I29, register_file.I30, register_file.I31);
 
-    // $monitor("\n PC=%d, nPC=%d\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n\n Output PA Mux:%b\n ============================================================ \
-    // \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b, \n\n Source Operand Handler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (control_signal_out[17:15]): %b, Output: %b\n============================================================",
-    // pc.pc_out, npc.npc_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.Y,id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N );
+    // $monitor("\n PC=%d\n Input0 (PA Register File) PA Mux:%b,\n Input1 (Output DataMem after MUX) PA MUX:%b,\n Input2 (WB Output) PA MUX: %b,\n Input3 (EX_ALU Output)PA Mux: %b\n MuxA Select: %b\n\n Output PA Mux:%b\n ============================================================ \
+    // \n InputA (MUX PA OUT) EX_ALU: %b,\n InputB (S2H Out) EX_ALU: %b,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %b, \n Z:%b & N:%b, \n\n Source Operand Handler: \n PB: %b, HI: %b,\n LO: %b, imm16: %b,\n SOH Opcode (control_signal_out[17:15]): %b, Output: %b\n\n \
+    // Input0 (PB Register File) PB Mux:%b\n Input1 PB MUX:%b,\n Input2 PB MUX:%b, \n Input3 PB MUX:%b\n MUX B Select:%b,  \n\nOutput MuxB:%b \n============================================================",
+    // pc_wire_out, muxA.I0, muxA.I1, muxA.I2, muxA.I3, muxA.S, muxA.Y, id_ex_stage.PA_out, source_operand_handler.N, id_ex_stage.control_signals_out[14:11], ex_alu.Out, ex_alu.Z, ex_alu.N, source_operand_handler.PB, source_operand_handler.HI, source_operand_handler.LO, source_operand_handler.imm16, source_operand_handler.S, source_operand_handler.N, muxB.I0, muxB.I1, muxB.I2, muxB.I3, muxB.S, muxB.Y);
 
     //  $monitor("\n PC:%d \n\nInputA (MUX PA OUT) EX_ALU: %d,\n InputB (S2H Out) EX_ALU: %d,\n Opcode (ID/EX Control signal[14:11])EX_ALU : %b,\n Output ALU: %d, \n Z:%b & N:%b\n =======================",
     //  pc.pc_out, ex_alu.A, ex_alu.B, ex_alu.Opcode, ex_alu.Out, ex_alu.Z, ex_alu.N);
@@ -384,14 +404,32 @@ always @(HazardForwardingUnit.hazard_type) begin
     2'b11: $display("Read-After-Write Hazard (PB)");
     default: $display("No Hazard");
 endcase
-    
 end
+
+// always @(posedge clk,posedge reset) begin
+//     if(reset) begin
+//         pc.pc_out<=0;
+//         npc.npc_out<=0;
+//         id_ex_stage.PC_out<=0;
+//     end
+//     else begin
+//         pc.pc_out <= pc_wire_out;
+//         npc.npc_out <= npc_wire_out;
+//         id_ex_stage.PC_out <= id_ex_stage.PC_out;
+//     end
+//     if(condition_handler.taken == 1)begin
+//         pc_mux.Out <= npc_wire_out + ({{16{id_ex_stage.id_ex_imm16_out[15]}}, id_ex_stage.id_ex_imm16_out}<<2);
+//     end
+
+// end
+
+
      
 
 initial fork
     #3 reset = 1'b0; // Remove the reset
     S = 1'b0;    
-    #120 $display("\nDataMemory contents at Address 52: %b\n\n", datamem.mem[52]);
+    // #120 $display("\nDataMemory contents at Address 55: %b\n\n", datamem.mem[55]);
    #120 $finish;
 join
 

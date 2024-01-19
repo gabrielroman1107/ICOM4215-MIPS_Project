@@ -2,7 +2,7 @@ module IF_ID_Stage ( //IF_ID
     input wire clk,
     input wire reset,
     input  [31:0] instruction_in,
-    // input wire load_enable,
+    input wire load_enable,
     input [31:0] pc,
     // input logic_box,
     output reg [31:0] instruction_reg,
@@ -28,8 +28,9 @@ module IF_ID_Stage ( //IF_ID
 always @(posedge clk) begin
     if (reset) begin
         instruction_reg <= 32'b0;
-        PC <= 32'b0;
-end else begin
+        //PC <= 32'b0;
+        $display("***********************************************\nRESET!\n***********************************************\n");
+end else if(load_enable) begin
         instruction_reg <= instruction_in;
         instruction_rs <= instruction_in[25:21];
         instruction_rt <= instruction_in[20:16];

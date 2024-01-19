@@ -4,6 +4,7 @@ module ID_EX_Stage ( //ID/EX
     input reset,
     input wire [24:0] control_signals,
     input wire [15:0] id_ex_imm16,
+    input wire [31:0] ex_instruction,
     input wire [31:0] PA,
     input wire [31:0] PB,
     input wire [31:0] PC,
@@ -15,6 +16,7 @@ module ID_EX_Stage ( //ID/EX
     output reg [31:0] PB_out,
     output reg [31:0] PC_out,
     output reg [31:0] RS_Address_out,
+    output reg [31:0] instruction_reg,
     output reg [4:0] destination_out
 );
     // Execute stage logic
@@ -36,6 +38,7 @@ module ID_EX_Stage ( //ID/EX
         PC_out <= PC;
         destination_out <= destination;
         RS_Address_out <= RS_Address;
+        instruction_reg <= ex_instruction;
         end
     end
 
